@@ -210,7 +210,7 @@ func DeltaE(lab_one [3]float64, lab_other [3]float64) float64 {
 	dc = dc_
 	dh_ = 2 * math.Sqrt(c1_*c2_) * math.Sin(deg2rad(dh_/2.0))
 	//dh = dh_
-	l__avg = (l1_ + l2_) / 2
+	l__avg = math.Floor((l1_ + l2_) / 2) //hack
 	c__avg = (c1_ + c2_) / 2
 	if c1_*c2_ == 0 {
 		h__avg_cond = 3.0
@@ -249,7 +249,7 @@ func DeltaE(lab_one [3]float64, lab_other [3]float64) float64 {
 	s_c = 1 + 0.045*c__avg
 	t = (1 - 0.17*math.Cos(deg2rad(h__avg-30.0)) + 0.24*math.Cos(deg2rad(2.0*h__avg)) + 0.32*math.Cos(deg2rad(3.0*h__avg+6.0)) - 0.2*math.Cos(deg2rad(4*h__avg-63.0)))
 	s_h = 1 + 0.015*c__avg*t
-	dtheta = 30.0 * math.Pow(math.Exp(-1*((h__avg-275.0)/25.0)), 2)
+	dtheta = 30.0 * math.Exp(-1*math.Pow(((h__avg-275.0)/25.0), 2))
 	r_c = 2.0 * math.Sqrt(math.Pow(c__avg, 7)/(math.Pow(c__avg, 7)+pow25_7))
 	r_t = -math.Sin(deg2rad(2.0*dtheta)) * r_c
 	aj = dl_ / s_l / k_L
