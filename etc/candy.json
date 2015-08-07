@@ -1,0 +1,24 @@
+{
+  "base_colors": [
+    "660000", "cc0000", "ea4c88", "993399", "663399", "304961", "0066cc", "66cccc", "77cc33", "336600", "cccc33", "ffcc33", "fff533", "ff6600", "c8ad7f", "996633", "663300", "000000", "999999", "cccccc", "ffffff"
+  ],
+  "cluster_colors": {
+    "660000": "660000", "cc0000": "cc0000", "ce454c": "cc0000",
+    "ea4c88": "ea4c88", "993399": "993399", "663399": "663399",
+    "304961": "304961", "405672": "304961", "0066cc": "0066cc",
+    "1a3672": "0066cc", "333399": "0066cc", "0099cc": "0066cc",
+    "66cccc": "66cccc", "77cc33": "77cc33", "336600": "336600",
+    "cccc33": "cccc33", "999900": "cccc33", "ffcc33": "ffcc33",
+    "fff533": "fff533", "efd848": "fff533", "ff6600": "ff6600",
+    "c8ad7f": "c8ad7f", "ccad37": "c8ad7f", "e0d3ba": "c8ad7f",
+    "996633": "996633", "663300": "663300", "000000": "000000",
+    "2e2929": "000000", "999999": "999999", "7e8896": "999999",
+    "636363": "999999", "cccccc": "cccccc", "afb5ab": "cccccc",
+    "ffffff": "ffffff", "dde2e2": "ffffff", "edefeb": "ffffff",
+    "ffe6e6": "ffffff", "d5ccc3": "ffffff",
+    "f6fce3": "ffffff", "e1f4fa": "ffffff", "e5e1fa": "ffffff",
+    "fbe2f1": "ffffff", "fffae6": "ffffff", "ede7cf": "ffffff",
+    "cae0e7": "ffffff", "ede1cf": "ffffff",
+    "cad3d5": "ffffff"
+  }
+}
