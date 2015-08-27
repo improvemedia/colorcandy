@@ -35,7 +35,7 @@ func (s *ThriftService) Start(addr string) {
 	server.Serve()
 }
 
-func (s *ThriftService) Candify(url string) (res map[int64]*candy.ColorMeta, err error) {
+func (s *ThriftService) Candify(url string) (res map[string]*candy.ColorMeta, err error) {
 	log.Printf("processing: %s", url)
 
 	start := time.Now()

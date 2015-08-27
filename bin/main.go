@@ -37,14 +37,14 @@ func main() {
 	c := colorcandy.New(config)
 
 	if *url != "" {
-		fmt.Printf("URL: %s", *url)
+		fmt.Printf("URL: %s\n", *url)
 
 		res, err := c.Candify(*url)
 		if err != nil {
 			log.Fatal(err)
 		}
 		enc := json.NewEncoder(os.Stdout)
-		enc.Encode(res)
+		fmt.Println(enc.Encode(res))
 
 		return
 	}

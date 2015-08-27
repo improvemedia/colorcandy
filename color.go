@@ -4,8 +4,6 @@ import (
 	"encoding/hex"
 	"image/color"
 	"math"
-
-	"github.com/gographics/imagick/imagick"
 )
 
 var (
@@ -46,10 +44,6 @@ func NewColor(r uint32, g uint32, b uint32) Color {
 		b /= 257
 	}
 	return Color{r, g, b, 0}
-}
-
-func ColorFromMagick(p imagick.PixelWand) Color {
-	return NewColor(uint32(p.GetRedQuantum()), uint32(p.GetGreenQuantum()), uint32(p.GetBlueQuantum()))
 }
 
 func ColorFromString(c string) Color {

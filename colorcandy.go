@@ -5,17 +5,20 @@ package colorcandy
 // use new types for something else (for map with pix-count-percent ?)
 
 import (
-	"github.com/gographics/imagick/imagick"
-
+	"bytes"
 	"image/color"
+	"log"
 	"math"
+	"os/exec"
+	"strconv"
+	"strings"
 
 	"github.com/improvemedia/colorcandy.git/candy"
 )
 
 type Config struct {
 	BaseColorsStr       []string `json:"base_colors"`
-	BaseColors          []Color
+	BaseColors          map[string]Color
 	ClusterColorsStr    map[string]string `json:"cluster_colors"`
 	ClusterColors       map[Color]Color
 	ColorsCount         uint    `json:"colors_count"`
@@ -47,9 +50,9 @@ func New(config Config) *ColorCandy {
 		config.Delta = 2.5
 	}
 
-	config.BaseColors = make([]Color, len(config.BaseColorsStr))
+	config.BaseColors = map[string]Color{}
 	for i, c := range config.BaseColorsStr {
-		config.BaseColors[i] = ColorFromString(c)
+		config.BaseColors[string(i)] = ColorFromString(c)
 	}
 
 	config.ClusterColors = map[Color]Color{}
@@ -60,37 +63,41 @@ func New(config Config) *ColorCandy {
 	return &ColorCandy{config}
 }
 
-func (colorCandy *ColorCandy) Candify(path string) (map[int64]*candy.ColorMeta, error) {
+func (colorCandy *ColorCandy) Candify(path string) (map[string]*candy.ColorMeta, error) {
 	const delta float64 = 2.5
 
-	mw := imagick.NewMagickWand()
-	defer mw.Destroy()
-
-	err := mw.ReadImage(path)
+	cmd := exec.Command("convert", "+dither", "-colors", "60", "-quantize", "YIQ", "-format", "%c", path, "histogram:info:-")
+	var out bytes.Buffer
+	var errout bytes.Buffer
+	cmd.Stdout = &out
+	cmd.Stderr = &errout
+	err := cmd.Run()
 	if err != nil {
-		return nil, err
+		log.Printf("%s: %s", err, errout)
+		log.Fatal()
 	}
 
-	mw.QuantizeImage(colorCandy.ColorsCount, imagick.COLORSPACE_YIQ, 0, true, false)
-	_, pixels := mw.GetImageHistogram()
-
-	var sum_of_pixels float64 = 0.0
 	delta_count := 0
 	mapped_palette := map[Color]*ColorCount{}
-	for _, pix := range pixels {
-		if pix.IsVerified() == true {
-			count := pix.GetColorCount()
-			sum_of_pixels += float64(count)
-			color := ColorFromMagick(pix)
-			mapped_palette[color] = &ColorCount{
-				color,
-				count,
-				0.0,
-			}
-		}
-		defer pix.Destroy()
-	}
+	var sum_of_pixels float64 = 0.0
 
+	lines := strings.Split(out.String(), "\n")
+	for _, line := range lines {
+		if line == "" {
+			break
+		}
+		split1 := strings.Split(line, "#")
+		a, b := split1[0], split1[1]
+		split2 := strings.Split(a, ": ")
+		count, _ := strconv.Atoi(strings.TrimLeft(split2[0], " "))
+		color := ColorFromString(b[0:6])
+		sum_of_pixels += float64(count)
+		mapped_palette[color] = &ColorCount{
+			color,
+			uint(count),
+			0.0,
+		}
+	}
 	for k, _ := range mapped_palette {
 		mapped_palette[k].Percentage = float64(mapped_palette[k].Total) / (sum_of_pixels / 100.0)
 	}
@@ -123,15 +130,15 @@ func (colorCandy *ColorCandy) Candify(path string) (map[int64]*candy.ColorMeta, 
 		new_palette[common_colors[0].color] = common_colors[0]
 	}
 
-	colors := map[int64]*candy.ColorMeta{}
+	colors := map[string]*candy.ColorMeta{}
 	//colors := make(map[int]color_meta)
 	for color, count := range new_palette {
 		cluster, delta := colorCandy.ClosestColorTo(color)
 		hexColor := color.Hex()
-		var id int64
+		var id string
 		for i, v := range colorCandy.BaseColors { // FIXME:(Alexander Yunin): if defined?(Rails) { SearchColor.find_or_create_by(color: color).id }
 			if v == cluster {
-				id = int64(i)
+				id = string(i)
 				break
 			}
 		}
@@ -146,7 +153,7 @@ func (colorCandy *ColorCandy) Candify(path string) (map[int64]*candy.ColorMeta, 
 			colors[id] = oldMeta
 		} else {
 			colors[id] = &candy.ColorMeta{
-				Id:            int64(id),
+				Id:            id,
 				SearchFactor:  count.Percentage,
 				Distance:      delta,
 				Hex:           hexColor,
