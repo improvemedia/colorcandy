@@ -4,7 +4,7 @@ struct ColorCount {
 }
 
 struct ColorMeta {
-  1: i64 id,
+  1: string id,
   2: double search_factor,
   3: double distance,
   4: string hex,
@@ -13,5 +13,5 @@ struct ColorMeta {
 }
 
 service Candy {
-  map<i64,ColorMeta> candify(1: string url)
+  map<string,ColorMeta> candify(1: string url)
 }

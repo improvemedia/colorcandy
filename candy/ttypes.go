@@ -132,7 +132,7 @@ func (p *ColorCount) String() string {
 }
 
 type ColorMeta struct {
-	Id            int64                  `thrift:"id,1"`
+	Id            string                 `thrift:"id,1"`
 	SearchFactor  float64                `thrift:"search_factor,2"`
 	Distance      float64                `thrift:"distance,3"`
 	Hex           string                 `thrift:"hex,4"`
@@ -197,7 +197,7 @@ func (p *ColorMeta) Read(iprot thrift.TProtocol) error {
 }
 
 func (p *ColorMeta) readField1(iprot thrift.TProtocol) error {
-	if v, err := iprot.ReadI64(); err != nil {
+	if v, err := iprot.ReadString(); err != nil {
 		return fmt.Errorf("error reading field 1: %s")
 	} else {
 		p.Id = v
@@ -298,10 +298,10 @@ func (p *ColorMeta) Write(oprot thrift.TProtocol) error {
 }
 
 func (p *ColorMeta) writeField1(oprot thrift.TProtocol) (err error) {
-	if err := oprot.WriteFieldBegin("id", thrift.I64, 1); err != nil {
+	if err := oprot.WriteFieldBegin("id", thrift.STRING, 1); err != nil {
 		return fmt.Errorf("%T write field begin error 1:id: %s", p, err)
 	}
-	if err := oprot.WriteI64(int64(p.Id)); err != nil {
+	if err := oprot.WriteString(string(p.Id)); err != nil {
 		return fmt.Errorf("%T.id (1) field write error: %s", p)
 	}
 	if err := oprot.WriteFieldEnd(); err != nil {

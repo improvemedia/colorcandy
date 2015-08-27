@@ -17,7 +17,7 @@ var _ = fmt.Printf
 type Candy interface {
 	// Parameters:
 	//  - Url
-	Candify(url string) (r map[int64]*ColorMeta, err error)
+	Candify(url string) (r map[string]*ColorMeta, err error)
 }
 
 type CandyClient struct {
@@ -48,7 +48,7 @@ func NewCandyClientProtocol(t thrift.TTransport, iprot thrift.TProtocol, oprot t
 
 // Parameters:
 //  - Url
-func (p *CandyClient) Candify(url string) (r map[int64]*ColorMeta, err error) {
+func (p *CandyClient) Candify(url string) (r map[string]*ColorMeta, err error) {
 	if err = p.sendCandify(url); err != nil {
 		return
 	}
@@ -71,7 +71,7 @@ func (p *CandyClient) sendCandify(url string) (err error) {
 	return
 }
 
-func (p *CandyClient) recvCandify() (value map[int64]*ColorMeta, err error) {
+func (p *CandyClient) recvCandify() (value map[string]*ColorMeta, err error) {
 	iprot := p.InputProtocol
 	if iprot == nil {
 		iprot = p.ProtocolFactory.GetProtocol(p.Transport)
@@ -280,7 +280,7 @@ func (p *CandifyArgs) String() string {
 }
 
 type CandifyResult struct {
-	Success map[int64]*ColorMeta `thrift:"success,0"`
+	Success map[string]*ColorMeta `thrift:"success,0"`
 }
 
 func NewCandifyResult() *CandifyResult {
@@ -324,10 +324,10 @@ func (p *CandifyResult) readField0(iprot thrift.TProtocol) error {
 	if err != nil {
 		return fmt.Errorf("error reading map begin: %s")
 	}
-	p.Success = make(map[int64]*ColorMeta, size)
+	p.Success = make(map[string]*ColorMeta, size)
 	for i := 0; i < size; i++ {
-		var _key8 int64
-		if v, err := iprot.ReadI64(); err != nil {
+		var _key8 string
+		if v, err := iprot.ReadString(); err != nil {
 			return fmt.Errorf("error reading field 0: %s")
 		} else {
 			_key8 = v
@@ -368,11 +368,11 @@ func (p *CandifyResult) writeField0(oprot thrift.TProtocol) (err error) {
 		if err := oprot.WriteFieldBegin("success", thrift.MAP, 0); err != nil {
 			return fmt.Errorf("%T write field begin error 0:success: %s", p, err)
 		}
-		if err := oprot.WriteMapBegin(thrift.I64, thrift.STRUCT, len(p.Success)); err != nil {
+		if err := oprot.WriteMapBegin(thrift.STRING, thrift.STRUCT, len(p.Success)); err != nil {
 			return fmt.Errorf("error writing map begin: %s")
 		}
 		for k, v := range p.Success {
-			if err := oprot.WriteI64(int64(k)); err != nil {
+			if err := oprot.WriteString(string(k)); err != nil {
 				return fmt.Errorf("%T. (0) field write error: %s", p)
 			}
 			if err := v.Write(oprot); err != nil {
