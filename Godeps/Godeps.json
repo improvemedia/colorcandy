@@ -5,11 +5,6 @@
 		{
 			"ImportPath": "git.apache.org/thrift.git/lib/go/thrift",
 			"Rev": "2fab3deb09e492cbcb2b1e4ed1c1d302787a9abd"
-		},
-		{
-			"ImportPath": "github.com/gographics/imagick/imagick",
-			"Comment": "0.0.1-52-ge210a63",
-			"Rev": "e210a63f8d14a741c2ccfe78cd5295a207ec69c7"
 		}
 	]
 }
