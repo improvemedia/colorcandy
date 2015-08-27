@@ -5,13 +5,8 @@ package colorcandy
 // use new types for something else (for map with pix-count-percent ?)
 
 import (
-	"bytes"
 	"image/color"
-	"log"
 	"math"
-	"os/exec"
-	"strconv"
-	"strings"
 
 	"github.com/improvemedia/colorcandy.git/candy"
 )
@@ -66,41 +61,8 @@ func New(config Config) *ColorCandy {
 func (colorCandy *ColorCandy) Candify(path string) (map[string]*candy.ColorMeta, error) {
 	const delta float64 = 2.5
 
-	cmd := exec.Command("convert", "+dither", "-colors", "60", "-quantize", "YIQ", "-format", "%c", path, "histogram:info:-")
-	var out bytes.Buffer
-	var errout bytes.Buffer
-	cmd.Stdout = &out
-	cmd.Stderr = &errout
-	err := cmd.Run()
-	if err != nil {
-		log.Printf("%s: %s", err, errout)
-		log.Fatal()
-	}
-
 	delta_count := 0
-	mapped_palette := map[Color]*ColorCount{}
-	var sum_of_pixels float64 = 0.0
-
-	lines := strings.Split(out.String(), "\n")
-	for _, line := range lines {
-		if line == "" {
-			break
-		}
-		split1 := strings.Split(line, "#")
-		a, b := split1[0], split1[1]
-		split2 := strings.Split(a, ": ")
-		count, _ := strconv.Atoi(strings.TrimLeft(split2[0], " "))
-		color := ColorFromString(b[0:6])
-		sum_of_pixels += float64(count)
-		mapped_palette[color] = &ColorCount{
-			color,
-			uint(count),
-			0.0,
-		}
-	}
-	for k, _ := range mapped_palette {
-		mapped_palette[k].Percentage = float64(mapped_palette[k].Total) / (sum_of_pixels / 100.0)
-	}
+	mapped_palette := ImageHistogram(path)
 
 	cp_mapped_palette := mapped_palette
 	new_palette := map[Color]*ColorCount{}
