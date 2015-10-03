@@ -39,7 +39,7 @@ func (s *ThriftService) ExtractColors(url string) (res map[string]*candy.ColorMe
 	log.Printf("processing: %s", url)
 
 	start := time.Now()
-	res, err = s.ColorCandy.ExtractColors(url)
+	res, _, err = s.ColorCandy.ExtractColors(url)
 	if err != nil {
 		log.Printf("Error: %s", err)
 	}

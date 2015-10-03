@@ -55,18 +55,19 @@ func ImageHistogram(path string) map[Color]*ColorCount {
 		sum += float64(count)
 		histogram[color] = &ColorCount{
 			color,
-			uint(count),
+			int64(count),
 			0.0,
 		}
 	}
 	for k, _ := range histogram {
 		histogram[k].Percentage = float64(histogram[k].Total) / sum * 100.0
 	}
+
 	return histogram
 }
 
 func _convert(path string) bytes.Buffer {
-	cmd := exec.Command("convert", "+dither", "-colors", "60", "-quantize", "YIQ", "-format", "%c", path, "histogram:info:-")
+	cmd := exec.Command("convert", "+dither", "-colors", "60", "-quantize", "YIQ", "-depth", "0", "-format", "%c", path, "histogram:info:-")
 	var out bytes.Buffer
 	var errout bytes.Buffer
 	cmd.Stdout = &out

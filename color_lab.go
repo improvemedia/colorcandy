@@ -62,6 +62,26 @@ func RgbToLab(rgba color.Color) color.Color {
 	}
 }
 
+func LabMerge(count1 *ColorCount, count2 *ColorCount) (*ColorCount, *ColorCount) {
+	// c1 := Lab.Convert(count1.color)
+	// c2 := Lab.Convert(count2.color)
+
+	max := count2
+	if count1.Percentage >= count2.Percentage {
+		max = count1
+		max.Total += count1.Total
+	} else {
+		max.Total += count2.Total
+	}
+
+	min := count2
+	if count1.Total <= count2.Total {
+		min = count1
+	}
+
+	return max, min
+}
+
 func DeltaE(lab_one color.Color, lab_other color.Color) float64 {
 	l1, a1, b1, _ := lab_one.RGBA()
 	l2, a2, b2, _ := lab_other.RGBA()

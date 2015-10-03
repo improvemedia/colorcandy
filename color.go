@@ -13,7 +13,7 @@ type Color [4]uint32
 
 type ColorCount struct {
 	color      Color
-	Total      uint
+	Total      int64
 	Percentage float64
 }
 

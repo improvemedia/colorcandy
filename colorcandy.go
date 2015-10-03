@@ -7,6 +7,8 @@ package colorcandy
 import (
 	"image/color"
 	"math"
+	_ "math/rand"
+	"strconv"
 
 	"github.com/improvemedia/colorcandy.git/candy"
 )
@@ -47,7 +49,7 @@ func New(config Config) *ColorCandy {
 
 	config.BaseColors = map[string]Color{}
 	for i, c := range config.BaseColorsStr {
-		config.BaseColors[string(i)] = ColorFromString(c)
+		config.BaseColors[strconv.Itoa(i)] = ColorFromString(c)
 	}
 
 	config.ClusterColors = map[Color]Color{}
@@ -58,25 +60,29 @@ func New(config Config) *ColorCandy {
 	return &ColorCandy{config}
 }
 
-func (colorCandy *ColorCandy) ExtractColors(path string) (map[string]*candy.ColorMeta, error) {
+func (colorCandy *ColorCandy) ExtractColors(path string) (map[string]*candy.ColorMeta, map[string]*candy.ColorCount, error) {
 	histogram := CompactToCommonColors(ImageHistogram(path))
 
 	colors := map[string]*candy.ColorMeta{}
+	colorsHex := map[string]*candy.ColorCount{}
+
 	for color, count := range histogram {
 		cluster, delta := colorCandy.closestColorTo(color)
 		hexColor := color.Hex()
 		var id string
 		for i, v := range colorCandy.BaseColors { // FIXME:(Alexander Yunin): if defined?(Rails) { SearchColor.find_or_create_by(color: color).id }
 			if v == cluster {
-				id = string(i)
+				id = i
 				break
 			}
 		}
 
 		colorCount := &candy.ColorCount{
-			Total:      int64(count.Total),
+			Total:      count.Total,
 			Percentage: count.Percentage,
 		}
+		colorsHex["#"+hexColor] = colorCount
+
 		if oldMeta, found := colors[id]; found {
 			oldMeta.OriginalColor["#"+hexColor] = colorCount
 			oldMeta.SearchFactor += count.Percentage
@@ -93,7 +99,58 @@ func (colorCandy *ColorCandy) ExtractColors(path string) (map[string]*candy.Colo
 		}
 	}
 
-	return colors, nil
+	return colors, colorsHex, nil
+}
+
+func (colorCandy *ColorCandy) CreatePalette(colors map[string]*candy.ColorCount) map[string]*candy.ColorCount {
+
+	for len(colors) > colorCandy.PaletteColorsMaxNum {
+		colorsArr := []*ColorCount{}
+		for k, v := range colors {
+			colorsArr = append(colorsArr, &ColorCount{
+				color:      ColorFromString(k),
+				Total:      v.Total,
+				Percentage: v.Percentage,
+			})
+		}
+
+		matrix := make([][]float64, len(colors))
+		for i, row := range colorsArr {
+			matrix[i] = make([]float64, len(colors))
+			for j, col := range colorsArr {
+				rgbColor1 := row.color
+				rgbColor2 := col.color
+				pixel1 := Lab.Convert(rgbColor1)
+				pixel2 := Lab.Convert(rgbColor2)
+				diff := DeltaE(pixel1, pixel2)
+				if diff == 0 {
+					diff = 100000
+				}
+				matrix[i][j] = diff
+			}
+		}
+
+		pos1, pos2 := 0, 0
+		var min float64 = 100001
+		for i := 0; i < len(colorsArr); i++ {
+			for j := 0; j < len(colorsArr); j++ {
+				v := matrix[i][j]
+				if v < min {
+					min = v
+					pos1, pos2 = i, j
+				}
+			}
+		}
+
+		add, remove := LabMerge(colorsArr[pos1], colorsArr[pos2])
+		colors[add.color.Hex()] = &candy.ColorCount{
+			Total:      add.Total,
+			Percentage: add.Percentage,
+		}
+		delete(colors, remove.color.Hex())
+	}
+
+	return colors
 }
 
 func (colorCandy *ColorCandy) closestColorTo(c color.Color) (color.Color, float64) {
