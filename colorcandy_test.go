@@ -84,6 +84,12 @@ func TestDeltaE(t *testing.T) {
 	if deltaE != 17.41339210323694 {
 		t.FailNow()
 	}
+
+	deltaE = DeltaE(Lab.Convert2(ColorFromString("af0d09")), Lab.Convert2(ColorFromString("ab1001")))
+	t.Logf("%.2f", deltaE)
+	if deltaE != 1.5962745605563358 {
+		t.FailNow()
+	}
 }
 
 func TestClosestBaseColor(t *testing.T) {
@@ -101,6 +107,192 @@ func TestClosestBaseColor(t *testing.T) {
 	}
 	if math.Floor(d2) != 18 {
 		t.Fatalf("d2=%.2f", d2)
+	}
+}
+
+func TestCompactToCommonColors(t *testing.T) {
+	var c Color
+	palette := map[Color]*ColorCount{}
+	c = ColorFromString("0b100d")
+	palette[c] = &ColorCount{c, 61660, 36.27058823529412}
+	c = ColorFromString("0f100a")
+	palette[c] = &ColorCount{c, 32885, 19.344117647058823}
+	c = ColorFromString("0e1117")
+	palette[c] = &ColorCount{c, 17194, 10.114117647058823}
+	c = ColorFromString("141111")
+	palette[c] = &ColorCount{c, 8207, 4.82764705882353}
+	c = ColorFromString("352b16")
+	palette[c] = &ColorCount{c, 2817, 1.6570588235294117}
+	c = ColorFromString("212f2b")
+	palette[c] = &ColorCount{c, 3469, 2.0405882352941176}
+	c = ColorFromString("470d04")
+	palette[c] = &ColorCount{c, 1368, 0.8047058823529412}
+	c = ColorFromString("661e0d")
+	palette[c] = &ColorCount{c, 1358, 0.7988235294117647}
+	c = ColorFromString("5c2f04")
+	palette[c] = &ColorCount{c, 1795, 1.0558823529411765}
+	c = ColorFromString("422527")
+	palette[c] = &ColorCount{c, 1600, 0.9411764705882353}
+	c = ColorFromString("754b10")
+	palette[c] = &ColorCount{c, 1264, 0.7435294117647059}
+	c = ColorFromString("574b2a")
+	palette[c] = &ColorCount{c, 1091, 0.6417647058823529}
+	c = ColorFromString("242f49")
+	palette[c] = &ColorCount{c, 1228, 0.7223529411764706}
+	c = ColorFromString("1a3971")
+	palette[c] = &ColorCount{c, 2140, 1.2588235294117647}
+	c = ColorFromString("135241")
+	palette[c] = &ColorCount{c, 1141, 0.6711764705882353}
+	c = ColorFromString("3a5555")
+	palette[c] = &ColorCount{c, 739, 0.43470588235294116}
+	c = ColorFromString("3e4f73")
+	palette[c] = &ColorCount{c, 1945, 1.1441176470588235}
+	c = ColorFromString("2e6074")
+	palette[c] = &ColorCount{c, 823, 0.48411764705882354}
+	c = ColorFromString("5b4646")
+	palette[c] = &ColorCount{c, 949, 0.558235294117647}
+	c = ColorFromString("4f6770")
+	palette[c] = &ColorCount{c, 377, 0.22176470588235295}
+	c = ColorFromString("931305")
+	palette[c] = &ColorCount{c, 2759, 1.6229411764705883}
+	c = ColorFromString("af0d09")
+	palette[c] = &ColorCount{c, 1074, 0.6317647058823529}
+	c = ColorFromString("ab1001")
+	palette[c] = &ColorCount{c, 791, 0.4652941176470588}
+	c = ColorFromString("80361f")
+	palette[c] = &ColorCount{c, 702, 0.41294117647058826}
+	c = ColorFromString("a73309")
+	palette[c] = &ColorCount{c, 1211, 0.7123529411764706}
+	c = ColorFromString("be3004")
+	palette[c] = &ColorCount{c, 1095, 0.6441176470588236}
+	c = ColorFromString("994607")
+	palette[c] = &ColorCount{c, 2026, 1.1917647058823528}
+	c = ColorFromString("bc440c")
+	palette[c] = &ColorCount{c, 337, 0.19823529411764707}
+	c = ColorFromString("907a01")
+	palette[c] = &ColorCount{c, 1578, 0.928235294117647}
+	c = ColorFromString("956e19")
+	palette[c] = &ColorCount{c, 540, 0.3176470588235294}
+	c = ColorFromString("a97305")
+	palette[c] = &ColorCount{c, 1750, 1.0294117647058822}
+	c = ColorFromString("b67c0a")
+	palette[c] = &ColorCount{c, 269, 0.15823529411764706}
+	c = ColorFromString("c74007")
+	palette[c] = &ColorCount{c, 1211, 0.7123529411764706}
+	c = ColorFromString("98644c")
+	palette[c] = &ColorCount{c, 484, 0.2847058823529412}
+	c = ColorFromString("8a7057")
+	palette[c] = &ColorCount{c, 1190, 0.7}
+	c = ColorFromString("a17a55")
+	palette[c] = &ColorCount{c, 611, 0.3594117647058824}
+	c = ColorFromString("a3775e")
+	palette[c] = &ColorCount{c, 442, 0.26}
+	c = ColorFromString("8b6d62")
+	palette[c] = &ColorCount{c, 938, 0.5517647058823529}
+	c = ColorFromString("9c7e62")
+	palette[c] = &ColorCount{c, 812, 0.4776470588235294}
+	c = ColorFromString("9e7b6c")
+	palette[c] = &ColorCount{c, 1407, 0.8276470588235294}
+	c = ColorFromString("2f5894")
+	palette[c] = &ColorCount{c, 3026, 1.78}
+	c = ColorFromString("4f6382")
+	palette[c] = &ColorCount{c, 413, 0.24294117647058824}
+	c = ColorFromString("41649e")
+	palette[c] = &ColorCount{c, 1284, 0.7552941176470588}
+	sample := map[string]*ColorCount{}
+	var k string
+	k = "0b100d"
+	sample[k] = &ColorCount{c, 61660, 36.27058823529412}
+	k = "0f100a"
+	sample[k] = &ColorCount{c, 32885, 19.344117647058823}
+	k = "0e1117"
+	sample[k] = &ColorCount{c, 17194, 10.114117647058823}
+	k = "141111"
+	sample[k] = &ColorCount{c, 8207, 4.82764705882353}
+	k = "352b16"
+	sample[k] = &ColorCount{c, 2817, 1.6570588235294117}
+	k = "212f2b"
+	sample[k] = &ColorCount{c, 3469, 2.0405882352941176}
+	k = "470d04"
+	sample[k] = &ColorCount{c, 1368, 0.8047058823529412}
+	k = "661e0d"
+	sample[k] = &ColorCount{c, 1358, 0.7988235294117647}
+	k = "5c2f04"
+	sample[k] = &ColorCount{c, 1795, 1.0558823529411765}
+	k = "422527"
+	sample[k] = &ColorCount{c, 1600, 0.9411764705882353}
+	k = "754b10"
+	sample[k] = &ColorCount{c, 1264, 0.7435294117647059}
+	k = "574b2a"
+	sample[k] = &ColorCount{c, 1091, 0.6417647058823529}
+	k = "242f49"
+	sample[k] = &ColorCount{c, 1228, 0.7223529411764706}
+	k = "1a3971"
+	sample[k] = &ColorCount{c, 2140, 1.2588235294117647}
+	k = "135241"
+	sample[k] = &ColorCount{c, 1141, 0.6711764705882353}
+	k = "3a5555"
+	sample[k] = &ColorCount{c, 739, 0.43470588235294116}
+	k = "3e4f73"
+	sample[k] = &ColorCount{c, 1945, 1.1441176470588235}
+	k = "2e6074"
+	sample[k] = &ColorCount{c, 823, 0.48411764705882354}
+	k = "5b4646"
+	sample[k] = &ColorCount{c, 949, 0.558235294117647}
+	k = "4f6770"
+	sample[k] = &ColorCount{c, 377, 0.22176470588235295}
+	k = "931305"
+	sample[k] = &ColorCount{c, 2759, 1.6229411764705883}
+	k = "af0d09"
+	sample[k] = &ColorCount{c, 1074, 1.0970588235294116}
+	k = "80361f"
+	sample[k] = &ColorCount{c, 702, 0.41294117647058826}
+	k = "a73309"
+	sample[k] = &ColorCount{c, 1211, 0.7123529411764706}
+	k = "be3004"
+	sample[k] = &ColorCount{c, 1095, 0.6441176470588236}
+	k = "994607"
+	sample[k] = &ColorCount{c, 2026, 1.1917647058823528}
+	k = "bc440c"
+	sample[k] = &ColorCount{c, 337, 0.19823529411764707}
+	k = "907a01"
+	sample[k] = &ColorCount{c, 1578, 0.928235294117647}
+	k = "956e19"
+	sample[k] = &ColorCount{c, 540, 0.3176470588235294}
+	k = "a97305"
+	sample[k] = &ColorCount{c, 1750, 1.0294117647058822}
+	k = "b67c0a"
+	sample[k] = &ColorCount{c, 269, 0.15823529411764706}
+	k = "c74007"
+	sample[k] = &ColorCount{c, 1211, 0.7123529411764706}
+	k = "98644c"
+	sample[k] = &ColorCount{c, 484, 0.2847058823529412}
+	k = "8a7057"
+	sample[k] = &ColorCount{c, 1190, 0.7}
+	k = "a17a55"
+	sample[k] = &ColorCount{c, 611, 0.3594117647058824}
+	k = "a3775e"
+	sample[k] = &ColorCount{c, 442, 0.26}
+	k = "8b6d62"
+	sample[k] = &ColorCount{c, 938, 0.5517647058823529}
+	k = "9c7e62"
+	sample[k] = &ColorCount{c, 812, 0.4776470588235294}
+	k = "9e7b6c"
+	sample[k] = &ColorCount{c, 1407, 0.8276470588235294}
+	k = "2f5894"
+	sample[k] = &ColorCount{c, 3026, 1.78}
+	k = "4f6382"
+	sample[k] = &ColorCount{c, 413, 0.24294117647058824}
+	k = "41649e"
+	sample[k] = &ColorCount{c, 1284, 0.7552941176470588}
+
+	compacted := CompactToCommonColors(palette, 2.5)
+	for k, v := range compacted {
+		if s, ok := sample[k.Hex()]; ok {
+			if s.Total != v.Total || s.Percentage != v.Percentage {
+				t.Fatalf("k: %s %d != %d or %.2f != %.2f", k.Hex(), s.Total, v.Total, s.Percentage, v.Percentage)
+			}
+		}
 	}
 }
 

@@ -83,7 +83,7 @@ func (colorCandy *ColorCandy) Candify(path string, searchColors []string) (*cand
 }
 
 func (colorCandy *ColorCandy) ExtractColors(path string) (map[string]*candy.ColorMeta, map[string]*ColorCount, map[string]map[string]*ColorCount) {
-	histogram := CompactToCommonColors(ImageHistogram(path))
+	histogram := CompactToCommonColors(ImageHistogram(path), colorCandy.Delta)
 
 	colors := map[string]*candy.ColorMeta{}
 	colorsCount := map[string]*ColorCount{}

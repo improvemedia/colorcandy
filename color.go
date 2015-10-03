@@ -5,11 +5,17 @@ import (
 )
 
 type Model struct {
-	converter func(Color) Color
+	converter func(int32, int32, int32) Color
 }
 
 func (m Model) Convert(c Color) Color {
-	return m.converter(c)
+	r, g, b := c.RGB()
+	return m.converter(r, g, b)
+}
+
+func (m Model) Convert2(c Color) Color {
+	r, g, b := c.RGB()
+	return m.converter(r, b, g)
 }
 
 var (
@@ -37,6 +43,10 @@ func (c Color) Equal(other Color) bool {
 
 func (c Color) Hex() string {
 	return hex.EncodeToString([]byte{byte(c[0]), byte(c[1]), byte(c[2])})
+}
+
+func (c Color) String() string {
+	return "#" + c.Hex()
 }
 
 func NewColor(r int32, g int32, b int32) Color {

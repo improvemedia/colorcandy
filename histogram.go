@@ -2,40 +2,51 @@ package colorcandy
 
 import (
 	"bytes"
+	_ "fmt"
 	"log"
 	"os/exec"
 	"strconv"
 	"strings"
 )
 
-const CompactDelta float64 = 2.5
+func CompactToCommonColors(_original map[Color]*ColorCount, delta float64) map[Color]*ColorCount {
+	_copy := map[Color]struct{}{}
+	for k, _ := range _original {
+		_copy[k] = struct{}{}
+	}
 
-func CompactToCommonColors(_original map[Color]*ColorCount) map[Color]*ColorCount {
-	result := map[Color]*ColorCount{}
-	_copy := _original
-	deltaCount := 0
+	for _, v1 := range _original {
+		toRemove := []Color{}
+		commonColors := map[Color]*ColorCount{}
 
-	for color1, v1 := range _original {
-		commonColors := []*ColorCount{v1}
+		for k2, _ := range _copy {
+			v2 := _original[k2]
+			d := DeltaE(Lab.Convert2(v1.color), Lab.Convert2(v2.color))
+			if delta > d {
+				if v1.color.Equal(v2.color) {
+					if _, ok := commonColors[v1.color]; !ok {
+						commonColors[v1.color] = v1
+					}
+				} else {
+					if _, ok := commonColors[v2.color]; !ok {
+						commonColors[v2.color] = v2
+					}
 
-		for color2, v2 := range _copy {
-			if CompactDelta > DeltaE(Lab.Convert(color1), Lab.Convert(color2)) {
-				deltaCount += 1 //debug
-				if !color1.Equal(color2) {
-					commonColors = append(commonColors, v2)
-					commonColors[0].Percentage += v2.Percentage
+					if _, ok := commonColors[v1.color]; ok {
+						v2.Percentage += v1.Percentage
+						toRemove = append(toRemove, v2.color)
+					} else {
+						commonColors[v1.color] = v1
+					}
 				}
 			}
 		}
-
-		for _, count := range commonColors[1:] {
-			delete(_copy, count.color)
+		for _, k := range toRemove {
+			delete(_copy, k)
 		}
-
-		result[commonColors[0].color] = commonColors[0]
 	}
 
-	return result
+	return _original
 }
 
 func ImageHistogram(path string) map[Color]*ColorCount {

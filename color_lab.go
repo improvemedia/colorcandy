@@ -4,9 +4,7 @@ import (
 	"math"
 )
 
-func RgbToLab(rgba Color) Color {
-	_r, _g, _b := rgba.RGB()
-
+func RgbToLab(_r, _g, _b int32) Color {
 	r := normalize(float64(_r))
 	g := normalize(float64(_g))
 	b := normalize(float64(_b))
