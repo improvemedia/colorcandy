@@ -9,14 +9,11 @@ import (
 	"math"
 	"math/rand"
 	"sort"
-	"strconv"
 
 	"github.com/improvemedia/colorcandy.git/candy"
 )
 
 type Config struct {
-	BaseColorsStr       []string          `json:"base_colors"`
-	BaseColors          map[string]Color  `json:"-"`
 	ClusterColorsStr    map[string]string `json:"cluster_colors"`
 	ClusterColors       map[Color]Color   `json:"-"`
 	ColorsCount         uint              `json:"colors_count"`
@@ -48,11 +45,6 @@ func New(config Config) *ColorCandy {
 		config.Delta = 2.5
 	}
 
-	config.BaseColors = map[string]Color{}
-	for i, c := range config.BaseColorsStr {
-		config.BaseColors[strconv.Itoa(i)] = ColorFromString(c)
-	}
-
 	config.ClusterColors = map[Color]Color{}
 	for k, v := range config.ClusterColorsStr {
 		config.ClusterColors[ColorFromString(k)] = ColorFromString(v)
@@ -61,58 +53,76 @@ func New(config Config) *ColorCandy {
 	return &ColorCandy{config}
 }
 
-func (colorCandy *ColorCandy) ExtractColors(path string) (map[string]*candy.ColorMeta, map[string]*candy.ColorCount, error) {
-	histogram := CompactToCommonColors(ImageHistogram(path))
+func (colorCandy *ColorCandy) Candify(path string, searchColors []string) (*candy.Result, error) {
+	colors, colorsCount, baseColorsCount := colorCandy.ExtractColors(path)
 
-	colors := map[string]*candy.ColorMeta{}
-	colorsHex := map[string]*candy.ColorCount{}
-
-	for color, count := range histogram {
-		cluster, delta := colorCandy.closestColorTo(color)
-		hexColor := color.Hex()
-		var id string
-		for i, v := range colorCandy.BaseColors { // FIXME:(Alexander Yunin): if defined?(Rails) { SearchColor.find_or_create_by(color: color).id }
-			if v == cluster {
-				id = i
-				break
-			}
-		}
-
-		colorCount := &candy.ColorCount{
-			Total:      count.Total,
-			Percentage: count.Percentage,
-		}
-		colorsHex["#"+hexColor] = colorCount
-
-		if oldMeta, found := colors[id]; found {
-			oldMeta.OriginalColor["#"+hexColor] = colorCount
-			oldMeta.SearchFactor += count.Percentage
-			colors[id] = oldMeta
-		} else {
-			colors[id] = &candy.ColorMeta{
-				Id:            id,
-				SearchFactor:  count.Percentage,
-				Distance:      delta,
-				Hex:           hexColor,
-				OriginalColor: map[string]*candy.ColorCount{"#" + hexColor: colorCount},
-				HexOfBase:     colorCandy.BaseColors[id].Hex(),
+	var paletteColors map[string]*ColorCount
+	if len(searchColors) == 0 {
+		paletteColors = colorsCount
+	} else {
+		for _, searchColor := range searchColors {
+			if baseColorCount, ok := baseColorsCount[searchColor]; ok {
+				for color, count := range baseColorCount {
+					paletteColors[color] = count
+				}
 			}
 		}
 	}
 
-	return colors, colorsHex, nil
+	palette := map[string]*candy.ColorCount{}
+	for k, v := range colorCandy.CreatePalette(paletteColors) {
+		palette[k] = &candy.ColorCount{
+			Total:      v.Total,
+			Percentage: v.Percentage,
+		}
+	}
+
+	return &candy.Result{
+		Colors:  colors,
+		Palette: palette,
+	}, nil
 }
 
-func (colorCandy *ColorCandy) CreatePalette(colors map[string]*candy.ColorCount) map[string]*candy.ColorCount {
+func (colorCandy *ColorCandy) ExtractColors(path string) (map[string]*candy.ColorMeta, map[string]*ColorCount, map[string]map[string]*ColorCount) {
+	histogram := CompactToCommonColors(ImageHistogram(path))
 
+	colors := map[string]*candy.ColorMeta{}
+	colorsCount := map[string]*ColorCount{}
+	baseColorsCount := map[string]map[string]*ColorCount{}
+
+	for color, count := range histogram {
+		baseColor, delta := colorCandy.closestBaseColorTo(color)
+		baseColorHex := baseColor.Hex()
+
+		colorsCount[color.Hex()] = count
+		if _, ok := baseColorsCount[baseColorHex]; ok {
+			baseColorsCount[baseColorHex][color.Hex()] = count
+		} else {
+			baseColorsCount[baseColorHex] = map[string]*ColorCount{
+				color.Hex(): count,
+			}
+		}
+
+		if meta, found := colors[baseColor.Hex()]; found {
+			meta.SearchFactor += count.Percentage
+		} else {
+			colors[baseColorHex] = &candy.ColorMeta{
+				Color:        color.Hex(),
+				BaseColor:    baseColor.Hex(),
+				SearchFactor: count.Percentage,
+				Distance:     delta,
+			}
+		}
+	}
+
+	return colors, colorsCount, baseColorsCount
+}
+
+func (colorCandy *ColorCandy) CreatePalette(colors map[string]*ColorCount) (result map[string]*ColorCount) {
 	for len(colors) > colorCandy.PaletteColorsMaxNum {
 		colorsArr := []*ColorCount{}
-		for k, v := range colors {
-			colorsArr = append(colorsArr, &ColorCount{
-				color:      ColorFromString(k),
-				Total:      v.Total,
-				Percentage: v.Percentage,
-			})
+		for _, v := range colors {
+			colorsArr = append(colorsArr, v)
 		}
 
 		matrix := make([][]float64, len(colors))
@@ -144,26 +154,18 @@ func (colorCandy *ColorCandy) CreatePalette(colors map[string]*candy.ColorCount)
 		}
 
 		add, remove := LabMerge(colorsArr[pos1], colorsArr[pos2])
-		colors[add.color.Hex()] = &candy.ColorCount{
-			Total:      add.Total,
-			Percentage: add.Percentage,
-		}
+		colors[add.color.Hex()] = add
 		delete(colors, remove.color.Hex())
 	}
 	if len(colors) == colorCandy.PaletteColorsMaxNum {
-		return colors
+		return
 	}
 	for len(colors) < colorCandy.PaletteColorsMaxNum {
-		colorsArr := []*ColorCount{}
-		for k, v := range colors {
-			colorsArr = append(colorsArr, &ColorCount{
-				color:      ColorFromString(k),
-				Total:      v.Total,
-				Percentage: v.Percentage,
-			})
+		colorsArr := []Color{}
+		for k, _ := range colors {
+			colorsArr = append(colorsArr, ColorFromString(k))
 		}
-		count := colorsArr[rand.Intn(len(colorsArr))]
-		r, g, b, _ := count.color.RGBA()
+		r, g, b, _ := colorsArr[rand.Intn(len(colorsArr))].RGBA()
 		min := r
 		max := r
 		if g < min {
@@ -195,15 +197,15 @@ func (colorCandy *ColorCandy) CreatePalette(colors map[string]*candy.ColorCount)
 		for _, e := range shifts[0:d] {
 			shift := e[0]
 			newColor := Color{r + uint32(shift), g + uint32(shift), b + uint32(shift)}
-			colors[newColor.Hex()] = &candy.ColorCount{1, 2}
+			colors[newColor.Hex()] = &ColorCount{newColor, 1, 2}
 		}
 	}
 
-	return colors
+	return
 }
 
-func (colorCandy *ColorCandy) closestColorTo(c color.Color) (color.Color, float64) {
-	var closestColor color.Color
+func (colorCandy *ColorCandy) closestBaseColorTo(c color.Color) (Color, float64) {
+	var closestColor Color
 	var cluster Color
 	minDelta := math.MaxFloat64 // pls no buf overflow
 

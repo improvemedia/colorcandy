@@ -4,14 +4,17 @@ struct ColorCount {
 }
 
 struct ColorMeta {
-  1: string id,
-  2: double search_factor,
-  3: double distance,
-  4: string hex,
-  5: map<string, ColorCount> original_color,
-  6: string hex_of_base
+  1: string color,
+  2: string baseColor,
+  3: double search_factor,
+  4: double distance
+}
+
+struct Result {
+  1: map<string, ColorMeta> colors,
+  2: map<string, ColorCount> palette
 }
 
 service Candy {
-  map<string,ColorMeta> extractColors(1: string url)
+  Result candify(1: string url, 2: list<string> searchColors)
 }

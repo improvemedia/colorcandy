@@ -17,7 +17,8 @@ var _ = fmt.Printf
 type Candy interface {
 	// Parameters:
 	//  - Url
-	ExtractColors(url string) (r map[string]*ColorMeta, err error)
+	//  - SearchColors
+	Candify(url string, searchColors []string) (r *Result, err error)
 }
 
 type CandyClient struct {
@@ -48,30 +49,32 @@ func NewCandyClientProtocol(t thrift.TTransport, iprot thrift.TProtocol, oprot t
 
 // Parameters:
 //  - Url
-func (p *CandyClient) ExtractColors(url string) (r map[string]*ColorMeta, err error) {
-	if err = p.sendExtractColors(url); err != nil {
+//  - SearchColors
+func (p *CandyClient) Candify(url string, searchColors []string) (r *Result, err error) {
+	if err = p.sendCandify(url, searchColors); err != nil {
 		return
 	}
-	return p.recvExtractColors()
+	return p.recvCandify()
 }
 
-func (p *CandyClient) sendExtractColors(url string) (err error) {
+func (p *CandyClient) sendCandify(url string, searchColors []string) (err error) {
 	oprot := p.OutputProtocol
 	if oprot == nil {
 		oprot = p.ProtocolFactory.GetProtocol(p.Transport)
 		p.OutputProtocol = oprot
 	}
 	p.SeqId++
-	oprot.WriteMessageBegin("extractColors", thrift.CALL, p.SeqId)
-	args2 := NewExtractColorsArgs()
-	args2.Url = url
-	err = args2.Write(oprot)
+	oprot.WriteMessageBegin("candify", thrift.CALL, p.SeqId)
+	args4 := NewCandifyArgs()
+	args4.Url = url
+	args4.SearchColors = searchColors
+	err = args4.Write(oprot)
 	oprot.WriteMessageEnd()
 	oprot.Flush()
 	return
 }
 
-func (p *CandyClient) recvExtractColors() (value map[string]*ColorMeta, err error) {
+func (p *CandyClient) recvCandify() (value *Result, err error) {
 	iprot := p.InputProtocol
 	if iprot == nil {
 		iprot = p.ProtocolFactory.GetProtocol(p.Transport)
@@ -82,26 +85,26 @@ func (p *CandyClient) recvExtractColors() (value map[string]*ColorMeta, err erro
 		return
 	}
 	if mTypeId == thrift.EXCEPTION {
-		error4 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
-		var error5 error
-		error5, err = error4.Read(iprot)
+		error6 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
+		var error7 error
+		error7, err = error6.Read(iprot)
 		if err != nil {
 			return
 		}
 		if err = iprot.ReadMessageEnd(); err != nil {
 			return
 		}
-		err = error5
+		err = error7
 		return
 	}
 	if p.SeqId != seqId {
 		err = thrift.NewTApplicationException(thrift.BAD_SEQUENCE_ID, "ping failed: out of sequence response")
 		return
 	}
-	result3 := NewExtractColorsResult()
-	err = result3.Read(iprot)
+	result5 := NewCandifyResult()
+	err = result5.Read(iprot)
 	iprot.ReadMessageEnd()
-	value = result3.Success
+	value = result5.Success
 	return
 }
 
@@ -125,9 +128,9 @@ func (p *CandyProcessor) ProcessorMap() map[string]thrift.TProcessorFunction {
 
 func NewCandyProcessor(handler Candy) *CandyProcessor {
 
-	self6 := &CandyProcessor{handler: handler, processorMap: make(map[string]thrift.TProcessorFunction)}
-	self6.processorMap["extractColors"] = &candyProcessorExtractColors{handler: handler}
-	return self6
+	self8 := &CandyProcessor{handler: handler, processorMap: make(map[string]thrift.TProcessorFunction)}
+	self8.processorMap["candify"] = &candyProcessorCandify{handler: handler}
+	return self8
 }
 
 func (p *CandyProcessor) Process(iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
@@ -140,41 +143,41 @@ func (p *CandyProcessor) Process(iprot, oprot thrift.TProtocol) (success bool, e
 	}
 	iprot.Skip(thrift.STRUCT)
 	iprot.ReadMessageEnd()
-	x7 := thrift.NewTApplicationException(thrift.UNKNOWN_METHOD, "Unknown function "+name)
+	x9 := thrift.NewTApplicationException(thrift.UNKNOWN_METHOD, "Unknown function "+name)
 	oprot.WriteMessageBegin(name, thrift.EXCEPTION, seqId)
-	x7.Write(oprot)
+	x9.Write(oprot)
 	oprot.WriteMessageEnd()
 	oprot.Flush()
-	return false, x7
+	return false, x9
 
 }
 
-type candyProcessorExtractColors struct {
+type candyProcessorCandify struct {
 	handler Candy
 }
 
-func (p *candyProcessorExtractColors) Process(seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
-	args := NewExtractColorsArgs()
+func (p *candyProcessorCandify) Process(seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
+	args := NewCandifyArgs()
 	if err = args.Read(iprot); err != nil {
 		iprot.ReadMessageEnd()
 		x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err.Error())
-		oprot.WriteMessageBegin("extractColors", thrift.EXCEPTION, seqId)
+		oprot.WriteMessageBegin("candify", thrift.EXCEPTION, seqId)
 		x.Write(oprot)
 		oprot.WriteMessageEnd()
 		oprot.Flush()
 		return
 	}
 	iprot.ReadMessageEnd()
-	result := NewExtractColorsResult()
-	if result.Success, err = p.handler.ExtractColors(args.Url); err != nil {
-		x := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing extractColors: "+err.Error())
-		oprot.WriteMessageBegin("extractColors", thrift.EXCEPTION, seqId)
+	result := NewCandifyResult()
+	if result.Success, err = p.handler.Candify(args.Url, args.SearchColors); err != nil {
+		x := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing candify: "+err.Error())
+		oprot.WriteMessageBegin("candify", thrift.EXCEPTION, seqId)
 		x.Write(oprot)
 		oprot.WriteMessageEnd()
 		oprot.Flush()
 		return
 	}
-	if err2 := oprot.WriteMessageBegin("extractColors", thrift.REPLY, seqId); err2 != nil {
+	if err2 := oprot.WriteMessageBegin("candify", thrift.REPLY, seqId); err2 != nil {
 		err = err2
 	}
 	if err2 := result.Write(oprot); err == nil && err2 != nil {
@@ -194,15 +197,16 @@ func (p *candyProcessorExtractColors) Process(seqId int32, iprot, oprot thrift.T
 
 // HELPER FUNCTIONS AND STRUCTURES
 
-type ExtractColorsArgs struct {
-	Url string `thrift:"url,1"`
+type CandifyArgs struct {
+	Url          string   `thrift:"url,1"`
+	SearchColors []string `thrift:"searchColors,2"`
 }
 
-func NewExtractColorsArgs() *ExtractColorsArgs {
-	return &ExtractColorsArgs{}
+func NewCandifyArgs() *CandifyArgs {
+	return &CandifyArgs{}
 }
 
-func (p *ExtractColorsArgs) Read(iprot thrift.TProtocol) error {
+func (p *CandifyArgs) Read(iprot thrift.TProtocol) error {
 	if _, err := iprot.ReadStructBegin(); err != nil {
 		return fmt.Errorf("%T read error", p)
 	}
@@ -217,6 +221,10 @@ func (p *ExtractColorsArgs) Read(iprot thrift.TProtocol) error {
 		switch fieldId {
 		case 1:
 			if err := p.readField1(iprot); err != nil {
+				return err
+			}
+		case 2:
+			if err := p.readField2(iprot); err != nil {
 				return err
 			}
 		default:
@@ -234,7 +242,7 @@ func (p *ExtractColorsArgs) Read(iprot thrift.TProtocol) error {
 	return nil
 }
 
-func (p *ExtractColorsArgs) readField1(iprot thrift.TProtocol) error {
+func (p *CandifyArgs) readField1(iprot thrift.TProtocol) error {
 	if v, err := iprot.ReadString(); err != nil {
 		return fmt.Errorf("error reading field 1: %s")
 	} else {
@@ -243,11 +251,35 @@ func (p *ExtractColorsArgs) readField1(iprot thrift.TProtocol) error {
 	return nil
 }
 
-func (p *ExtractColorsArgs) Write(oprot thrift.TProtocol) error {
-	if err := oprot.WriteStructBegin("extractColors_args"); err != nil {
+func (p *CandifyArgs) readField2(iprot thrift.TProtocol) error {
+	_, size, err := iprot.ReadListBegin()
+	if err != nil {
+		return fmt.Errorf("error reading list being: %s")
+	}
+	p.SearchColors = make([]string, 0, size)
+	for i := 0; i < size; i++ {
+		var _elem10 string
+		if v, err := iprot.ReadString(); err != nil {
+			return fmt.Errorf("error reading field 0: %s")
+		} else {
+			_elem10 = v
+		}
+		p.SearchColors = append(p.SearchColors, _elem10)
+	}
+	if err := iprot.ReadListEnd(); err != nil {
+		return fmt.Errorf("error reading list end: %s")
+	}
+	return nil
+}
+
+func (p *CandifyArgs) Write(oprot thrift.TProtocol) error {
+	if err := oprot.WriteStructBegin("candify_args"); err != nil {
 		return fmt.Errorf("%T write struct begin error: %s", p, err)
 	}
 	if err := p.writeField1(oprot); err != nil {
+		return err
+	}
+	if err := p.writeField2(oprot); err != nil {
 		return err
 	}
 	if err := oprot.WriteFieldStop(); err != nil {
@@ -259,7 +291,7 @@ func (p *ExtractColorsArgs) Write(oprot thrift.TProtocol) error {
 	return nil
 }
 
-func (p *ExtractColorsArgs) writeField1(oprot thrift.TProtocol) (err error) {
+func (p *CandifyArgs) writeField1(oprot thrift.TProtocol) (err error) {
 	if err := oprot.WriteFieldBegin("url", thrift.STRING, 1); err != nil {
 		return fmt.Errorf("%T write field begin error 1:url: %s", p, err)
 	}
@@ -272,22 +304,45 @@ func (p *ExtractColorsArgs) writeField1(oprot thrift.TProtocol) (err error) {
 	return err
 }
 
-func (p *ExtractColorsArgs) String() string {
+func (p *CandifyArgs) writeField2(oprot thrift.TProtocol) (err error) {
+	if p.SearchColors != nil {
+		if err := oprot.WriteFieldBegin("searchColors", thrift.LIST, 2); err != nil {
+			return fmt.Errorf("%T write field begin error 2:searchColors: %s", p, err)
+		}
+		if err := oprot.WriteListBegin(thrift.STRING, len(p.SearchColors)); err != nil {
+			return fmt.Errorf("error writing list begin: %s")
+		}
+		for _, v := range p.SearchColors {
+			if err := oprot.WriteString(string(v)); err != nil {
+				return fmt.Errorf("%T. (0) field write error: %s", p)
+			}
+		}
+		if err := oprot.WriteListEnd(); err != nil {
+			return fmt.Errorf("error writing list end: %s")
+		}
+		if err := oprot.WriteFieldEnd(); err != nil {
+			return fmt.Errorf("%T write field end error 2:searchColors: %s", p, err)
+		}
+	}
+	return err
+}
+
+func (p *CandifyArgs) String() string {
 	if p == nil {
 		return "<nil>"
 	}
-	return fmt.Sprintf("ExtractColorsArgs(%+v)", *p)
+	return fmt.Sprintf("CandifyArgs(%+v)", *p)
 }
 
-type ExtractColorsResult struct {
-	Success map[string]*ColorMeta `thrift:"success,0"`
+type CandifyResult struct {
+	Success *Result `thrift:"success,0"`
 }
 
-func NewExtractColorsResult() *ExtractColorsResult {
-	return &ExtractColorsResult{}
+func NewCandifyResult() *CandifyResult {
+	return &CandifyResult{}
 }
 
-func (p *ExtractColorsResult) Read(iprot thrift.TProtocol) error {
+func (p *CandifyResult) Read(iprot thrift.TProtocol) error {
 	if _, err := iprot.ReadStructBegin(); err != nil {
 		return fmt.Errorf("%T read error", p)
 	}
@@ -319,33 +374,16 @@ func (p *ExtractColorsResult) Read(iprot thrift.TProtocol) error {
 	return nil
 }
 
-func (p *ExtractColorsResult) readField0(iprot thrift.TProtocol) error {
-	_, _, size, err := iprot.ReadMapBegin()
-	if err != nil {
-		return fmt.Errorf("error reading map begin: %s")
-	}
-	p.Success = make(map[string]*ColorMeta, size)
-	for i := 0; i < size; i++ {
-		var _key8 string
-		if v, err := iprot.ReadString(); err != nil {
-			return fmt.Errorf("error reading field 0: %s")
-		} else {
-			_key8 = v
-		}
-		_val9 := NewColorMeta()
-		if err := _val9.Read(iprot); err != nil {
-			return fmt.Errorf("%T error reading struct: %s", _val9)
-		}
-		p.Success[_key8] = _val9
-	}
-	if err := iprot.ReadMapEnd(); err != nil {
-		return fmt.Errorf("error reading map end: %s")
+func (p *CandifyResult) readField0(iprot thrift.TProtocol) error {
+	p.Success = NewResult()
+	if err := p.Success.Read(iprot); err != nil {
+		return fmt.Errorf("%T error reading struct: %s", p.Success)
 	}
 	return nil
 }
 
-func (p *ExtractColorsResult) Write(oprot thrift.TProtocol) error {
-	if err := oprot.WriteStructBegin("extractColors_result"); err != nil {
+func (p *CandifyResult) Write(oprot thrift.TProtocol) error {
+	if err := oprot.WriteStructBegin("candify_result"); err != nil {
 		return fmt.Errorf("%T write struct begin error: %s", p, err)
 	}
 	switch {
@@ -363,24 +401,13 @@ func (p *ExtractColorsResult) Write(oprot thrift.TProtocol) error {
 	return nil
 }
 
-func (p *ExtractColorsResult) writeField0(oprot thrift.TProtocol) (err error) {
+func (p *CandifyResult) writeField0(oprot thrift.TProtocol) (err error) {
 	if p.Success != nil {
-		if err := oprot.WriteFieldBegin("success", thrift.MAP, 0); err != nil {
+		if err := oprot.WriteFieldBegin("success", thrift.STRUCT, 0); err != nil {
 			return fmt.Errorf("%T write field begin error 0:success: %s", p, err)
 		}
-		if err := oprot.WriteMapBegin(thrift.STRING, thrift.STRUCT, len(p.Success)); err != nil {
-			return fmt.Errorf("error writing map begin: %s")
-		}
-		for k, v := range p.Success {
-			if err := oprot.WriteString(string(k)); err != nil {
-				return fmt.Errorf("%T. (0) field write error: %s", p)
-			}
-			if err := v.Write(oprot); err != nil {
-				return fmt.Errorf("%T error writing struct: %s", v)
-			}
-		}
-		if err := oprot.WriteMapEnd(); err != nil {
-			return fmt.Errorf("error writing map end: %s")
+		if err := p.Success.Write(oprot); err != nil {
+			return fmt.Errorf("%T error writing struct: %s", p.Success)
 		}
 		if err := oprot.WriteFieldEnd(); err != nil {
 			return fmt.Errorf("%T write field end error 0:success: %s", p, err)
@@ -389,9 +416,9 @@ func (p *ExtractColorsResult) writeField0(oprot thrift.TProtocol) (err error) {
 	return err
 }
 
-func (p *ExtractColorsResult) String() string {
+func (p *CandifyResult) String() string {
 	if p == nil {
 		return "<nil>"
 	}
-	return fmt.Sprintf("ExtractColorsResult(%+v)", *p)
+	return fmt.Sprintf("CandifyResult(%+v)", *p)
 }

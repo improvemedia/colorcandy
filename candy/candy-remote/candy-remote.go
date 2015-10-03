@@ -20,7 +20,7 @@ func Usage() {
 	fmt.Fprintln(os.Stderr, "Usage of ", os.Args[0], " [-h host:port] [-u url] [-f[ramed]] function [arg1 [arg2...]]:")
 	flag.PrintDefaults()
 	fmt.Fprintln(os.Stderr, "\nFunctions:")
-	fmt.Fprintln(os.Stderr, "   extractColors(string url)")
+	fmt.Fprintln(os.Stderr, "  Result candify(string url,  searchColors)")
 	fmt.Fprintln(os.Stderr)
 	os.Exit(0)
 }
@@ -115,14 +115,32 @@ func main() {
 	}
 
 	switch cmd {
-	case "extractColors":
-		if flag.NArg()-1 != 1 {
-			fmt.Fprintln(os.Stderr, "ExtractColors requires 1 args")
+	case "candify":
+		if flag.NArg()-1 != 2 {
+			fmt.Fprintln(os.Stderr, "Candify requires 2 args")
 			flag.Usage()
 		}
 		argvalue0 := flag.Arg(1)
 		value0 := argvalue0
-		fmt.Print(client.ExtractColors(value0))
+		arg12 := flag.Arg(2)
+		mbTrans13 := thrift.NewTMemoryBufferLen(len(arg12))
+		defer mbTrans13.Close()
+		_, err14 := mbTrans13.WriteString(arg12)
+		if err14 != nil {
+			Usage()
+			return
+		}
+		factory15 := thrift.NewTSimpleJSONProtocolFactory()
+		jsProt16 := factory15.GetProtocol(mbTrans13)
+		containerStruct1 := candy.NewCandifyArgs()
+		err17 := containerStruct1.ReadField2(jsProt16)
+		if err17 != nil {
+			Usage()
+			return
+		}
+		argvalue1 := containerStruct1.SearchColors
+		value1 := argvalue1
+		fmt.Print(client.Candify(value0, value1))
 		fmt.Print("\n")
 		break
 	case "":

@@ -35,11 +35,11 @@ func (s *ThriftService) Start(addr string) {
 	server.Serve()
 }
 
-func (s *ThriftService) ExtractColors(url string) (res map[string]*candy.ColorMeta, err error) {
+func (s *ThriftService) Candify(url string, searchColors []string) (res *candy.Result, err error) {
 	log.Printf("processing: %s", url)
 
 	start := time.Now()
-	res, _, err = s.ColorCandy.ExtractColors(url)
+	res, err = s.ColorCandy.Candify(url, searchColors)
 	if err != nil {
 		log.Printf("Error: %s", err)
 	}

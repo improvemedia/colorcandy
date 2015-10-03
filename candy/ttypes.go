@@ -132,12 +132,10 @@ func (p *ColorCount) String() string {
 }
 
 type ColorMeta struct {
-	Id            string                 `thrift:"id,1"`
-	SearchFactor  float64                `thrift:"search_factor,2"`
-	Distance      float64                `thrift:"distance,3"`
-	Hex           string                 `thrift:"hex,4"`
-	OriginalColor map[string]*ColorCount `thrift:"original_color,5"`
-	HexOfBase     string                 `thrift:"hex_of_base,6"`
+	Color        string  `thrift:"color,1"`
+	BaseColor    string  `thrift:"baseColor,2"`
+	SearchFactor float64 `thrift:"search_factor,3"`
+	Distance     float64 `thrift:"distance,4"`
 }
 
 func NewColorMeta() *ColorMeta {
@@ -173,14 +171,6 @@ func (p *ColorMeta) Read(iprot thrift.TProtocol) error {
 			if err := p.readField4(iprot); err != nil {
 				return err
 			}
-		case 5:
-			if err := p.readField5(iprot); err != nil {
-				return err
-			}
-		case 6:
-			if err := p.readField6(iprot); err != nil {
-				return err
-			}
 		default:
 			if err := iprot.Skip(fieldTypeId); err != nil {
 				return err
@@ -200,16 +190,16 @@ func (p *ColorMeta) readField1(iprot thrift.TProtocol) error {
 	if v, err := iprot.ReadString(); err != nil {
 		return fmt.Errorf("error reading field 1: %s")
 	} else {
-		p.Id = v
+		p.Color = v
 	}
 	return nil
 }
 
 func (p *ColorMeta) readField2(iprot thrift.TProtocol) error {
-	if v, err := iprot.ReadDouble(); err != nil {
+	if v, err := iprot.ReadString(); err != nil {
 		return fmt.Errorf("error reading field 2: %s")
 	} else {
-		p.SearchFactor = v
+		p.BaseColor = v
 	}
 	return nil
 }
@@ -218,50 +208,16 @@ func (p *ColorMeta) readField3(iprot thrift.TProtocol) error {
 	if v, err := iprot.ReadDouble(); err != nil {
 		return fmt.Errorf("error reading field 3: %s")
 	} else {
-		p.Distance = v
+		p.SearchFactor = v
 	}
 	return nil
 }
 
 func (p *ColorMeta) readField4(iprot thrift.TProtocol) error {
-	if v, err := iprot.ReadString(); err != nil {
+	if v, err := iprot.ReadDouble(); err != nil {
 		return fmt.Errorf("error reading field 4: %s")
 	} else {
-		p.Hex = v
-	}
-	return nil
-}
-
-func (p *ColorMeta) readField5(iprot thrift.TProtocol) error {
-	_, _, size, err := iprot.ReadMapBegin()
-	if err != nil {
-		return fmt.Errorf("error reading map begin: %s")
-	}
-	p.OriginalColor = make(map[string]*ColorCount, size)
-	for i := 0; i < size; i++ {
-		var _key0 string
-		if v, err := iprot.ReadString(); err != nil {
-			return fmt.Errorf("error reading field 0: %s")
-		} else {
-			_key0 = v
-		}
-		_val1 := NewColorCount()
-		if err := _val1.Read(iprot); err != nil {
-			return fmt.Errorf("%T error reading struct: %s", _val1)
-		}
-		p.OriginalColor[_key0] = _val1
-	}
-	if err := iprot.ReadMapEnd(); err != nil {
-		return fmt.Errorf("error reading map end: %s")
-	}
-	return nil
-}
-
-func (p *ColorMeta) readField6(iprot thrift.TProtocol) error {
-	if v, err := iprot.ReadString(); err != nil {
-		return fmt.Errorf("error reading field 6: %s")
-	} else {
-		p.HexOfBase = v
+		p.Distance = v
 	}
 	return nil
 }
@@ -282,10 +238,177 @@ func (p *ColorMeta) Write(oprot thrift.TProtocol) error {
 	if err := p.writeField4(oprot); err != nil {
 		return err
 	}
-	if err := p.writeField5(oprot); err != nil {
+	if err := oprot.WriteFieldStop(); err != nil {
+		return fmt.Errorf("%T write field stop error: %s", err)
+	}
+	if err := oprot.WriteStructEnd(); err != nil {
+		return fmt.Errorf("%T write struct stop error: %s", err)
+	}
+	return nil
+}
+
+func (p *ColorMeta) writeField1(oprot thrift.TProtocol) (err error) {
+	if err := oprot.WriteFieldBegin("color", thrift.STRING, 1); err != nil {
+		return fmt.Errorf("%T write field begin error 1:color: %s", p, err)
+	}
+	if err := oprot.WriteString(string(p.Color)); err != nil {
+		return fmt.Errorf("%T.color (1) field write error: %s", p)
+	}
+	if err := oprot.WriteFieldEnd(); err != nil {
+		return fmt.Errorf("%T write field end error 1:color: %s", p, err)
+	}
+	return err
+}
+
+func (p *ColorMeta) writeField2(oprot thrift.TProtocol) (err error) {
+	if err := oprot.WriteFieldBegin("baseColor", thrift.STRING, 2); err != nil {
+		return fmt.Errorf("%T write field begin error 2:baseColor: %s", p, err)
+	}
+	if err := oprot.WriteString(string(p.BaseColor)); err != nil {
+		return fmt.Errorf("%T.baseColor (2) field write error: %s", p)
+	}
+	if err := oprot.WriteFieldEnd(); err != nil {
+		return fmt.Errorf("%T write field end error 2:baseColor: %s", p, err)
+	}
+	return err
+}
+
+func (p *ColorMeta) writeField3(oprot thrift.TProtocol) (err error) {
+	if err := oprot.WriteFieldBegin("search_factor", thrift.DOUBLE, 3); err != nil {
+		return fmt.Errorf("%T write field begin error 3:search_factor: %s", p, err)
+	}
+	if err := oprot.WriteDouble(float64(p.SearchFactor)); err != nil {
+		return fmt.Errorf("%T.search_factor (3) field write error: %s", p)
+	}
+	if err := oprot.WriteFieldEnd(); err != nil {
+		return fmt.Errorf("%T write field end error 3:search_factor: %s", p, err)
+	}
+	return err
+}
+
+func (p *ColorMeta) writeField4(oprot thrift.TProtocol) (err error) {
+	if err := oprot.WriteFieldBegin("distance", thrift.DOUBLE, 4); err != nil {
+		return fmt.Errorf("%T write field begin error 4:distance: %s", p, err)
+	}
+	if err := oprot.WriteDouble(float64(p.Distance)); err != nil {
+		return fmt.Errorf("%T.distance (4) field write error: %s", p)
+	}
+	if err := oprot.WriteFieldEnd(); err != nil {
+		return fmt.Errorf("%T write field end error 4:distance: %s", p, err)
+	}
+	return err
+}
+
+func (p *ColorMeta) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("ColorMeta(%+v)", *p)
+}
+
+type Result struct {
+	Colors  map[string]*ColorMeta  `thrift:"colors,1"`
+	Palette map[string]*ColorCount `thrift:"palette,2"`
+}
+
+func NewResult() *Result {
+	return &Result{}
+}
+
+func (p *Result) Read(iprot thrift.TProtocol) error {
+	if _, err := iprot.ReadStructBegin(); err != nil {
+		return fmt.Errorf("%T read error", p)
+	}
+	for {
+		_, fieldTypeId, fieldId, err := iprot.ReadFieldBegin()
+		if err != nil {
+			return fmt.Errorf("%T field %d read error: %s", p, fieldId, err)
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+		switch fieldId {
+		case 1:
+			if err := p.readField1(iprot); err != nil {
+				return err
+			}
+		case 2:
+			if err := p.readField2(iprot); err != nil {
+				return err
+			}
+		default:
+			if err := iprot.Skip(fieldTypeId); err != nil {
+				return err
+			}
+		}
+		if err := iprot.ReadFieldEnd(); err != nil {
+			return err
+		}
+	}
+	if err := iprot.ReadStructEnd(); err != nil {
+		return fmt.Errorf("%T read struct end error: %s", p, err)
+	}
+	return nil
+}
+
+func (p *Result) readField1(iprot thrift.TProtocol) error {
+	_, _, size, err := iprot.ReadMapBegin()
+	if err != nil {
+		return fmt.Errorf("error reading map begin: %s")
+	}
+	p.Colors = make(map[string]*ColorMeta, size)
+	for i := 0; i < size; i++ {
+		var _key0 string
+		if v, err := iprot.ReadString(); err != nil {
+			return fmt.Errorf("error reading field 0: %s")
+		} else {
+			_key0 = v
+		}
+		_val1 := NewColorMeta()
+		if err := _val1.Read(iprot); err != nil {
+			return fmt.Errorf("%T error reading struct: %s", _val1)
+		}
+		p.Colors[_key0] = _val1
+	}
+	if err := iprot.ReadMapEnd(); err != nil {
+		return fmt.Errorf("error reading map end: %s")
+	}
+	return nil
+}
+
+func (p *Result) readField2(iprot thrift.TProtocol) error {
+	_, _, size, err := iprot.ReadMapBegin()
+	if err != nil {
+		return fmt.Errorf("error reading map begin: %s")
+	}
+	p.Palette = make(map[string]*ColorCount, size)
+	for i := 0; i < size; i++ {
+		var _key2 string
+		if v, err := iprot.ReadString(); err != nil {
+			return fmt.Errorf("error reading field 0: %s")
+		} else {
+			_key2 = v
+		}
+		_val3 := NewColorCount()
+		if err := _val3.Read(iprot); err != nil {
+			return fmt.Errorf("%T error reading struct: %s", _val3)
+		}
+		p.Palette[_key2] = _val3
+	}
+	if err := iprot.ReadMapEnd(); err != nil {
+		return fmt.Errorf("error reading map end: %s")
+	}
+	return nil
+}
+
+func (p *Result) Write(oprot thrift.TProtocol) error {
+	if err := oprot.WriteStructBegin("Result"); err != nil {
+		return fmt.Errorf("%T write struct begin error: %s", p, err)
+	}
+	if err := p.writeField1(oprot); err != nil {
 		return err
 	}
-	if err := p.writeField6(oprot); err != nil {
+	if err := p.writeField2(oprot); err != nil {
 		return err
 	}
 	if err := oprot.WriteFieldStop(); err != nil {
@@ -297,67 +420,15 @@ func (p *ColorMeta) Write(oprot thrift.TProtocol) error {
 	return nil
 }
 
-func (p *ColorMeta) writeField1(oprot thrift.TProtocol) (err error) {
-	if err := oprot.WriteFieldBegin("id", thrift.STRING, 1); err != nil {
-		return fmt.Errorf("%T write field begin error 1:id: %s", p, err)
-	}
-	if err := oprot.WriteString(string(p.Id)); err != nil {
-		return fmt.Errorf("%T.id (1) field write error: %s", p)
-	}
-	if err := oprot.WriteFieldEnd(); err != nil {
-		return fmt.Errorf("%T write field end error 1:id: %s", p, err)
-	}
-	return err
-}
-
-func (p *ColorMeta) writeField2(oprot thrift.TProtocol) (err error) {
-	if err := oprot.WriteFieldBegin("search_factor", thrift.DOUBLE, 2); err != nil {
-		return fmt.Errorf("%T write field begin error 2:search_factor: %s", p, err)
-	}
-	if err := oprot.WriteDouble(float64(p.SearchFactor)); err != nil {
-		return fmt.Errorf("%T.search_factor (2) field write error: %s", p)
-	}
-	if err := oprot.WriteFieldEnd(); err != nil {
-		return fmt.Errorf("%T write field end error 2:search_factor: %s", p, err)
-	}
-	return err
-}
-
-func (p *ColorMeta) writeField3(oprot thrift.TProtocol) (err error) {
-	if err := oprot.WriteFieldBegin("distance", thrift.DOUBLE, 3); err != nil {
-		return fmt.Errorf("%T write field begin error 3:distance: %s", p, err)
-	}
-	if err := oprot.WriteDouble(float64(p.Distance)); err != nil {
-		return fmt.Errorf("%T.distance (3) field write error: %s", p)
-	}
-	if err := oprot.WriteFieldEnd(); err != nil {
-		return fmt.Errorf("%T write field end error 3:distance: %s", p, err)
-	}
-	return err
-}
-
-func (p *ColorMeta) writeField4(oprot thrift.TProtocol) (err error) {
-	if err := oprot.WriteFieldBegin("hex", thrift.STRING, 4); err != nil {
-		return fmt.Errorf("%T write field begin error 4:hex: %s", p, err)
-	}
-	if err := oprot.WriteString(string(p.Hex)); err != nil {
-		return fmt.Errorf("%T.hex (4) field write error: %s", p)
-	}
-	if err := oprot.WriteFieldEnd(); err != nil {
-		return fmt.Errorf("%T write field end error 4:hex: %s", p, err)
-	}
-	return err
-}
-
-func (p *ColorMeta) writeField5(oprot thrift.TProtocol) (err error) {
-	if p.OriginalColor != nil {
-		if err := oprot.WriteFieldBegin("original_color", thrift.MAP, 5); err != nil {
-			return fmt.Errorf("%T write field begin error 5:original_color: %s", p, err)
+func (p *Result) writeField1(oprot thrift.TProtocol) (err error) {
+	if p.Colors != nil {
+		if err := oprot.WriteFieldBegin("colors", thrift.MAP, 1); err != nil {
+			return fmt.Errorf("%T write field begin error 1:colors: %s", p, err)
 		}
-		if err := oprot.WriteMapBegin(thrift.STRING, thrift.STRUCT, len(p.OriginalColor)); err != nil {
+		if err := oprot.WriteMapBegin(thrift.STRING, thrift.STRUCT, len(p.Colors)); err != nil {
 			return fmt.Errorf("error writing map begin: %s")
 		}
-		for k, v := range p.OriginalColor {
+		for k, v := range p.Colors {
 			if err := oprot.WriteString(string(k)); err != nil {
 				return fmt.Errorf("%T. (0) field write error: %s", p)
 			}
@@ -369,28 +440,41 @@ func (p *ColorMeta) writeField5(oprot thrift.TProtocol) (err error) {
 			return fmt.Errorf("error writing map end: %s")
 		}
 		if err := oprot.WriteFieldEnd(); err != nil {
-			return fmt.Errorf("%T write field end error 5:original_color: %s", p, err)
+			return fmt.Errorf("%T write field end error 1:colors: %s", p, err)
 		}
 	}
 	return err
 }
 
-func (p *ColorMeta) writeField6(oprot thrift.TProtocol) (err error) {
-	if err := oprot.WriteFieldBegin("hex_of_base", thrift.STRING, 6); err != nil {
-		return fmt.Errorf("%T write field begin error 6:hex_of_base: %s", p, err)
-	}
-	if err := oprot.WriteString(string(p.HexOfBase)); err != nil {
-		return fmt.Errorf("%T.hex_of_base (6) field write error: %s", p)
-	}
-	if err := oprot.WriteFieldEnd(); err != nil {
-		return fmt.Errorf("%T write field end error 6:hex_of_base: %s", p, err)
+func (p *Result) writeField2(oprot thrift.TProtocol) (err error) {
+	if p.Palette != nil {
+		if err := oprot.WriteFieldBegin("palette", thrift.MAP, 2); err != nil {
+			return fmt.Errorf("%T write field begin error 2:palette: %s", p, err)
+		}
+		if err := oprot.WriteMapBegin(thrift.STRING, thrift.STRUCT, len(p.Palette)); err != nil {
+			return fmt.Errorf("error writing map begin: %s")
+		}
+		for k, v := range p.Palette {
+			if err := oprot.WriteString(string(k)); err != nil {
+				return fmt.Errorf("%T. (0) field write error: %s", p)
+			}
+			if err := v.Write(oprot); err != nil {
+				return fmt.Errorf("%T error writing struct: %s", v)
+			}
+		}
+		if err := oprot.WriteMapEnd(); err != nil {
+			return fmt.Errorf("error writing map end: %s")
+		}
+		if err := oprot.WriteFieldEnd(); err != nil {
+			return fmt.Errorf("%T write field end error 2:palette: %s", p, err)
+		}
 	}
 	return err
 }
 
-func (p *ColorMeta) String() string {
+func (p *Result) String() string {
 	if p == nil {
 		return "<nil>"
 	}
-	return fmt.Sprintf("ColorMeta(%+v)", *p)
+	return fmt.Sprintf("Result(%+v)", *p)
 }
