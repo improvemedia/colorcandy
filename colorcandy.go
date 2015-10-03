@@ -5,7 +5,6 @@ package colorcandy
 // use new types for something else (for map with pix-count-percent ?)
 
 import (
-	"image/color"
 	"math"
 	"math/rand"
 	"sort"
@@ -142,7 +141,7 @@ func (colorCandy *ColorCandy) CreatePalette(colors map[string]*ColorCount) (resu
 		}
 
 		pos1, pos2 := 0, 0
-		var min float64 = 100001
+		var min float64 = math.MaxInt64
 		for i := 0; i < len(colorsArr); i++ {
 			for j := 0; j < len(colorsArr); j++ {
 				v := matrix[i][j]
@@ -196,7 +195,7 @@ func (colorCandy *ColorCandy) CreatePalette(colors map[string]*ColorCount) (resu
 		d := colorCandy.PaletteColorsMaxNum - len(colors)
 		for _, e := range shifts[0:d] {
 			shift := e[0]
-			newColor := Color{r + uint32(shift), g + uint32(shift), b + uint32(shift)}
+			newColor := Color{r + int32(shift), g + int32(shift), b + int32(shift)}
 			colors[newColor.Hex()] = &ColorCount{newColor, 1, 2}
 		}
 	}
@@ -204,7 +203,7 @@ func (colorCandy *ColorCandy) CreatePalette(colors map[string]*ColorCount) (resu
 	return
 }
 
-func (colorCandy *ColorCandy) closestBaseColorTo(c color.Color) (Color, float64) {
+func (colorCandy *ColorCandy) closestBaseColorTo(c Color) (Color, float64) {
 	var closestColor Color
 	var cluster Color
 	minDelta := math.MaxFloat64 // pls no buf overflow

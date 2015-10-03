@@ -1,7 +1,7 @@
 package colorcandy
 
 import (
-	"image/color"
+	"fmt"
 	"math"
 )
 
@@ -14,11 +14,11 @@ func LabHue(a, b float64) (ret float64) {
 	return
 }
 
-func LabChroma(a, b uint32) float64 {
+func LabChroma(a, b int32) float64 {
 	return math.Sqrt(float64((a * a) + (b * b)))
 }
 
-func RgbToLab(rgba color.Color) color.Color {
+func RgbToLab(rgba Color) Color {
 	_r, _g, _b, _ := rgba.RGBA()
 
 	r := normalize(float64(_r))
@@ -28,6 +28,8 @@ func RgbToLab(rgba color.Color) color.Color {
 	x := 0.436052025*r + 0.385081593*g + 0.143087414*b
 	y := 0.222491598*r + 0.71688606*g + 0.060621486*b
 	z := 0.013929122*r + 0.097097002*g + 0.71418547*b
+
+	fmt.Printf("x=%.2f y=%.2f z=%.2f", x, y, z)
 
 	xr := x / 0.964221
 	yr := y
@@ -55,9 +57,9 @@ func RgbToLab(rgba color.Color) color.Color {
 	}
 
 	return Color{
-		uint32(math.Floor(((116 * fy) - 16) + 0.5)),
-		uint32(math.Floor(500*(fx-fy) + 0.5)),
-		uint32(math.Floor(200*(fy-fz) + 0.5)),
+		int32(math.Floor(((116 * fy) - 16) + 0.5)),
+		int32(math.Floor(500*(fx-fy) + 0.5)),
+		int32(math.Floor(200*(fy-fz) + 0.5)),
 		0,
 	}
 }
@@ -82,7 +84,7 @@ func LabMerge(count1 *ColorCount, count2 *ColorCount) (*ColorCount, *ColorCount)
 	return max, min
 }
 
-func DeltaE(lab_one color.Color, lab_other color.Color) float64 {
+func DeltaE(lab_one Color, lab_other Color) float64 {
 	l1, a1, b1, _ := lab_one.RGBA()
 	l2, a2, b2, _ := lab_other.RGBA()
 	c1, c2 := LabChroma(a1, b1), LabChroma(a2, b2)

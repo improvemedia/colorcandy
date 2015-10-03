@@ -2,14 +2,21 @@ package colorcandy
 
 import (
 	"encoding/hex"
-	"image/color"
 )
+
+type Model struct {
+	converter func(Color) Color
+}
+
+func (m Model) Convert(c Color) Color {
+	return m.converter(c)
+}
 
 var (
-	Lab color.Model = color.ModelFunc(RgbToLab)
+	Lab Model = Model{RgbToLab}
 )
 
-type Color [4]uint32
+type Color [4]int32
 
 type ColorCount struct {
 	color      Color
@@ -17,7 +24,7 @@ type ColorCount struct {
 	Percentage float64
 }
 
-func (c Color) RGBA() (uint32, uint32, uint32, uint32) {
+func (c Color) RGBA() (int32, int32, int32, int32) {
 	return c[0], c[1], c[2], c[3]
 }
 
@@ -32,7 +39,7 @@ func (c Color) Hex() string {
 	return hex.EncodeToString([]byte{byte(c[0]), byte(c[1]), byte(c[2])})
 }
 
-func NewColor(r uint32, g uint32, b uint32) Color {
+func NewColor(r int32, g int32, b int32) Color {
 	if r/255 > 0 {
 		r /= 257
 	}
@@ -46,10 +53,10 @@ func NewColor(r uint32, g uint32, b uint32) Color {
 }
 
 func ColorFromString(c string) Color {
-	var rgb [3]uint32
+	var rgb [3]int32
 	for i, _ := range rgb {
 		b, _ := hex.DecodeString(string(c[i*2]) + string(c[i*2+1]))
-		rgb[i] = uint32(b[0])
+		rgb[i] = int32(b[0])
 	}
 	return Color{rgb[0], rgb[1], rgb[2], 0}
 }
