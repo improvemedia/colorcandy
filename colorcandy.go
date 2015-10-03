@@ -12,15 +12,15 @@ import (
 )
 
 type Config struct {
-	BaseColorsStr       []string `json:"base_colors"`
-	BaseColors          map[string]Color
+	BaseColorsStr       []string          `json:"base_colors"`
+	BaseColors          map[string]Color  `json:"-"`
 	ClusterColorsStr    map[string]string `json:"cluster_colors"`
-	ClusterColors       map[Color]Color
-	ColorsCount         uint    `json:"colors_count"`
-	PaletteColorsMaxNum int     `json:"palette_colors_max_num"`
-	WhiteThreshold      int     `json:"white_threshold"`
-	BlackThreshold      int     `json:"black_threshold"`
-	Delta               float64 `json:"delta"`
+	ClusterColors       map[Color]Color   `json:"-"`
+	ColorsCount         uint              `json:"colors_count"`
+	PaletteColorsMaxNum int               `json:"palette_colors_max_num"`
+	WhiteThreshold      int               `json:"white_threshold"`
+	BlackThreshold      int               `json:"black_threshold"`
+	Delta               float64           `json:"delta"`
 }
 
 type ColorCandy struct {
@@ -58,7 +58,7 @@ func New(config Config) *ColorCandy {
 	return &ColorCandy{config}
 }
 
-func (colorCandy *ColorCandy) Candify(path string) (map[string]*candy.ColorMeta, error) {
+func (colorCandy *ColorCandy) ExtractColors(path string) (map[string]*candy.ColorMeta, error) {
 	const delta float64 = 2.5
 
 	delta_count := 0
@@ -95,7 +95,7 @@ func (colorCandy *ColorCandy) Candify(path string) (map[string]*candy.ColorMeta,
 	colors := map[string]*candy.ColorMeta{}
 	//colors := make(map[int]color_meta)
 	for color, count := range new_palette {
-		cluster, delta := colorCandy.ClosestColorTo(color)
+		cluster, delta := colorCandy.closestColorTo(color)
 		hexColor := color.Hex()
 		var id string
 		for i, v := range colorCandy.BaseColors { // FIXME:(Alexander Yunin): if defined?(Rails) { SearchColor.find_or_create_by(color: color).id }
@@ -128,7 +128,7 @@ func (colorCandy *ColorCandy) Candify(path string) (map[string]*candy.ColorMeta,
 	return colors, nil
 }
 
-func (colorCandy *ColorCandy) ClosestColorTo(c color.Color) (color.Color, float64) {
+func (colorCandy *ColorCandy) closestColorTo(c color.Color) (color.Color, float64) {
 	var closest_color color.Color
 	var cluster Color
 	min_delta := math.MaxFloat64 // pls no buf overflow

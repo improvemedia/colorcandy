@@ -13,5 +13,5 @@ struct ColorMeta {
 }
 
 service Candy {
-  map<string,ColorMeta> candify(1: string url)
+  map<string,ColorMeta> extractColors(1: string url)
 }

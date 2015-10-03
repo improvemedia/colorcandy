@@ -12,12 +12,12 @@ func deg2rad(deg float64) float64 {
 	return (deg / 180.0) * math.Pi
 }
 
-func Normalize(v float64) (res float64) {
+func normalize(v float64) (ret float64) {
 	v /= 255.0
 	if v <= 0.04045 {
-		res = v / 12
+		ret = v / 12
 	} else {
-		res = math.Pow(((v + 0.055) / 1.055), 2.4)
+		ret = math.Pow(((v + 0.055) / 1.055), 2.4)
 	}
 	return
 }

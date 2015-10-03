@@ -1,5 +1,5 @@
 thrift:
-	thrift --gen go --out . candy.thrift
+	thrift --gen go --out . thrift/candy.thrift
 
 build: thrift
 	go get github.com/tools/godep
@@ -7,3 +7,5 @@ build: thrift
 
 run: build
 	./colorcandy
+
+.PHONY: thrift

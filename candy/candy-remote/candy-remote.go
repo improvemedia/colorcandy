@@ -20,7 +20,7 @@ func Usage() {
 	fmt.Fprintln(os.Stderr, "Usage of ", os.Args[0], " [-h host:port] [-u url] [-f[ramed]] function [arg1 [arg2...]]:")
 	flag.PrintDefaults()
 	fmt.Fprintln(os.Stderr, "\nFunctions:")
-	fmt.Fprintln(os.Stderr, "   candify(string url)")
+	fmt.Fprintln(os.Stderr, "   extractColors(string url)")
 	fmt.Fprintln(os.Stderr)
 	os.Exit(0)
 }
@@ -115,14 +115,14 @@ func main() {
 	}
 
 	switch cmd {
-	case "candify":
+	case "extractColors":
 		if flag.NArg()-1 != 1 {
-			fmt.Fprintln(os.Stderr, "Candify requires 1 args")
+			fmt.Fprintln(os.Stderr, "ExtractColors requires 1 args")
 			flag.Usage()
 		}
 		argvalue0 := flag.Arg(1)
 		value0 := argvalue0
-		fmt.Print(client.Candify(value0))
+		fmt.Print(client.ExtractColors(value0))
 		fmt.Print("\n")
 		break
 	case "":
