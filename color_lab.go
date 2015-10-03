@@ -69,9 +69,9 @@ func LabMerge(count1 *ColorCount, count2 *ColorCount) (*ColorCount, *ColorCount)
 	max := count2
 	if count1.Percentage >= count2.Percentage {
 		max = count1
-		max.Total += count1.Total
-	} else {
 		max.Total += count2.Total
+	} else {
+		max.Total += count1.Total
 	}
 
 	min := count2

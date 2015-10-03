@@ -7,7 +7,8 @@ package colorcandy
 import (
 	"image/color"
 	"math"
-	_ "math/rand"
+	"math/rand"
+	"sort"
 	"strconv"
 
 	"github.com/improvemedia/colorcandy.git/candy"
@@ -149,6 +150,54 @@ func (colorCandy *ColorCandy) CreatePalette(colors map[string]*candy.ColorCount)
 		}
 		delete(colors, remove.color.Hex())
 	}
+	if len(colors) == colorCandy.PaletteColorsMaxNum {
+		return colors
+	}
+	for len(colors) < colorCandy.PaletteColorsMaxNum {
+		colorsArr := []*ColorCount{}
+		for k, v := range colors {
+			colorsArr = append(colorsArr, &ColorCount{
+				color:      ColorFromString(k),
+				Total:      v.Total,
+				Percentage: v.Percentage,
+			})
+		}
+		count := colorsArr[rand.Intn(len(colorsArr))]
+		r, g, b, _ := count.color.RGBA()
+		min := r
+		max := r
+		if g < min {
+			min = g
+		}
+		if g > max {
+			max = g
+		}
+		if b < min {
+			min = b
+		}
+		if b > max {
+			max = b
+		}
+		shifts := [][]int{}
+		for i := -min; i < 255-max; i++ {
+			if math.Abs(float64(i)) < 30 {
+				shifts = append(shifts, []int{int(i), 2, -int(math.Abs(float64(i)))})
+			} else if int(math.Abs(float64(i)))%30 != 0 {
+				shifts = append(shifts, []int{int(i), 1, int(math.Abs(float64(i)))})
+			} else {
+				shifts = append(shifts, []int{int(i), 0, int(math.Abs(float64(i)))})
+			}
+		}
+
+		sort.Sort(ShiftSorter{shifts})
+
+		d := colorCandy.PaletteColorsMaxNum - len(colors)
+		for _, e := range shifts[0:d] {
+			shift := e[0]
+			newColor := Color{r + uint32(shift), g + uint32(shift), b + uint32(shift)}
+			colors[newColor.Hex()] = &candy.ColorCount{1, 2}
+		}
+	}
 
 	return colors
 }
@@ -168,4 +217,17 @@ func (colorCandy *ColorCandy) closestColorTo(c color.Color) (color.Color, float6
 		}
 	}
 	return cluster, DeltaE(Lab.Convert(cluster), Lab.Convert(closestColor))
+}
+
+type ShiftSorter struct {
+	Shifts [][]int
+}
+
+func (s ShiftSorter) Len() int      { return len(s.Shifts) }
+func (s ShiftSorter) Swap(i, j int) { s.Shifts[i], s.Shifts[j] = s.Shifts[j], s.Shifts[i] }
+func (s ShiftSorter) Less(i, j int) bool {
+	if s.Shifts[i][1] == s.Shifts[j][1] {
+		return s.Shifts[i][2] < s.Shifts[j][2]
+	}
+	return s.Shifts[i][1] < s.Shifts[j][1]
 }
