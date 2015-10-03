@@ -164,7 +164,7 @@ func (colorCandy *ColorCandy) CreatePalette(colors map[string]*ColorCount) (resu
 		for k, _ := range colors {
 			colorsArr = append(colorsArr, ColorFromString(k))
 		}
-		r, g, b, _ := colorsArr[rand.Intn(len(colorsArr))].RGBA()
+		r, g, b := colorsArr[rand.Intn(len(colorsArr))].RGB()
 		min := r
 		max := r
 		if g < min {

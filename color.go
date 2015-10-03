@@ -24,13 +24,13 @@ type ColorCount struct {
 	Percentage float64
 }
 
-func (c Color) RGBA() (int32, int32, int32, int32) {
-	return c[0], c[1], c[2], c[3]
+func (c Color) RGB() (int32, int32, int32) {
+	return c[0], c[1], c[2]
 }
 
 func (c Color) Equal(other Color) bool {
-	r1, g1, b1, _ := c.RGBA()
-	r2, g2, b2, _ := other.RGBA()
+	r1, g1, b1 := c.RGB()
+	r2, g2, b2 := other.RGB()
 
 	return r1 == r2 && g1 == g2 && b1 == b2
 }

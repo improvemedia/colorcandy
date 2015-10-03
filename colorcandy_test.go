@@ -25,8 +25,8 @@ func init() {
 func TestColor(t *testing.T) {
 	c := Color{255, 255, 255, 0}
 
-	r, g, b, a := c.RGBA()
-	if r != c[0] || g != c[1] || b != c[2] || a != c[3] {
+	r, g, b := c.RGB()
+	if r != c[0] || g != c[1] || b != c[2] {
 		t.FailNow()
 	}
 	if c.Hex() != "ffffff" {
@@ -46,7 +46,7 @@ func TestColor(t *testing.T) {
 }
 
 func TestRGBToLab(t *testing.T) {
-	l, a, b, _ := Lab.Convert(ColorFromString("1a3971")).RGBA()
+	l, a, b := Lab.Convert(ColorFromString("1a3971")).RGB()
 	if l != 24 || a != 5 || b != -36 {
 		t.Fatalf("%d,%d,%d", l, a, b)
 	}
