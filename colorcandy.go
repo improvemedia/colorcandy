@@ -59,42 +59,10 @@ func New(config Config) *ColorCandy {
 }
 
 func (colorCandy *ColorCandy) ExtractColors(path string) (map[string]*candy.ColorMeta, error) {
-	const delta float64 = 2.5
-
-	delta_count := 0
-	mapped_palette := ImageHistogram(path)
-
-	cp_mapped_palette := mapped_palette
-	new_palette := map[Color]*ColorCount{}
-
-	// cant iterate through map values inside a cycle after assigning new values
-	// I have to launch new cycle or will get mapped_palette[k] -> nil %)
-	for color1, v := range mapped_palette {
-		common_colors := []*ColorCount{v}
-		lab := Lab.Convert(color1)
-
-		for color2, v2 := range cp_mapped_palette {
-			lab2 := Lab.Convert(color2)
-
-			if delta > DeltaE(lab, lab2) {
-				delta_count += 1 //debug
-				if color1 != color2 {
-					common_colors = append(common_colors, v2)
-					common_colors[0].Percentage += v2.Percentage
-				}
-			}
-		}
-
-		for _, count := range common_colors[1:] {
-			delete(cp_mapped_palette, count.color)
-		}
-
-		new_palette[common_colors[0].color] = common_colors[0]
-	}
+	histogram := CompactToCommonColors(ImageHistogram(path))
 
 	colors := map[string]*candy.ColorMeta{}
-	//colors := make(map[int]color_meta)
-	for color, count := range new_palette {
+	for color, count := range histogram {
 		cluster, delta := colorCandy.closestColorTo(color)
 		hexColor := color.Hex()
 		var id string
@@ -129,18 +97,18 @@ func (colorCandy *ColorCandy) ExtractColors(path string) (map[string]*candy.Colo
 }
 
 func (colorCandy *ColorCandy) closestColorTo(c color.Color) (color.Color, float64) {
-	var closest_color color.Color
+	var closestColor color.Color
 	var cluster Color
-	min_delta := math.MaxFloat64 // pls no buf overflow
+	minDelta := math.MaxFloat64 // pls no buf overflow
 
 	lab := Lab.Convert(c)
 	for k, _ := range colorCandy.ClusterColors {
 		delta := DeltaE(Lab.Convert(k), lab)
-		if delta < min_delta {
-			min_delta = delta
-			closest_color = k
+		if delta < minDelta {
+			minDelta = delta
+			closestColor = k
 			cluster = colorCandy.ClusterColors[k]
 		}
 	}
-	return cluster, DeltaE(Lab.Convert(cluster), Lab.Convert(closest_color))
+	return cluster, DeltaE(Lab.Convert(cluster), Lab.Convert(closestColor))
 }
