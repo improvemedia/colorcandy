@@ -39,7 +39,7 @@ func main() {
 	if *url != "" {
 		fmt.Printf("URL: %s\n", *url)
 
-		res, err := c.Candify(*url)
+		res, err := c.Candify(*url, []string{})
 		if err != nil {
 			log.Fatal(err)
 		}

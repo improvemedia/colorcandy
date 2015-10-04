@@ -37,10 +37,10 @@ func New(config Config) *ColorCandy {
 		config.PaletteColorsMaxNum = 5
 	}
 	if config.WhiteThreshold == 0 {
-		config.WhiteThreshold = 55000
+		config.WhiteThreshold = 50000
 	}
 	if config.BlackThreshold == 0 {
-		config.BlackThreshold = 2000
+		config.BlackThreshold = 1500
 	}
 	if config.Delta == 0 {
 		config.Delta = 2.5
