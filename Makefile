@@ -1,6 +1,9 @@
 thrift:
 	thrift --gen go --out . thrift/candy.thrift
 
+thrift-rb:
+	thrift --gen rb --out ../marvin/marvin/lib/candy thrift/candy.thrift
+
 build: thrift
 	go get github.com/tools/godep
 	godep go build -o colorcandy bin/main.go
@@ -8,4 +11,4 @@ build: thrift
 run: build
 	./colorcandy
 
-.PHONY: thrift
+.PHONY: thrift thrift-rb

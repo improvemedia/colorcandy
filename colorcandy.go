@@ -13,6 +13,7 @@ import (
 )
 
 type Config struct {
+	UseImagick          bool              `json:"use_imagick"`
 	ClusterColorsStr    map[string]string `json:"cluster_colors"`
 	ClusterColors       map[Color]Color   `json:"-"`
 	ColorsCount         uint              `json:"colors_count"`
@@ -23,6 +24,7 @@ type Config struct {
 }
 
 type ColorCandy struct {
+	histogramMethod func(string) map[Color]*ColorCount
 	Config
 }
 
@@ -49,7 +51,14 @@ func New(config Config) *ColorCandy {
 		config.ClusterColors[ColorFromString(k)] = ColorFromString(v)
 	}
 
-	return &ColorCandy{config}
+	var m func(string) map[Color]*ColorCount
+	if config.UseImagick {
+		m = ImageHistogram_Imagick
+	} else {
+		m = ImageHistogram_Cmd
+	}
+
+	return &ColorCandy{m, config}
 }
 
 func (colorCandy *ColorCandy) Candify(path string, searchColors []string) (*candy.Result, error) {
@@ -83,7 +92,7 @@ func (colorCandy *ColorCandy) Candify(path string, searchColors []string) (*cand
 }
 
 func (colorCandy *ColorCandy) ExtractColors(path string) (map[string]*candy.ColorMeta, map[string]*ColorCount, map[string]map[string]*ColorCount) {
-	histogram := ImageHistogram(path)
+	histogram := colorCandy.histogramMethod(path)
 	compacted := CompactToCommonColors(histogram, colorCandy.Delta)
 
 	return colorCandy.extractColorsFromHistogram(compacted)
