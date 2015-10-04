@@ -5,6 +5,8 @@ package colorcandy
 // use new types for something else (for map with pix-count-percent ?)
 
 import (
+	"log"
+
 	"math"
 	"math/rand"
 	"sort"
@@ -77,6 +79,8 @@ func (colorCandy *ColorCandy) Candify(path string, searchColors []string) (*cand
 		}
 	}
 
+	log.Printf("paletteColors: %s", paletteColors)
+
 	palette := map[string]*candy.ColorCount{}
 	for k, v := range colorCandy.CreatePalette(paletteColors) {
 		palette[k] = &candy.ColorCount{
@@ -84,6 +88,8 @@ func (colorCandy *ColorCandy) Candify(path string, searchColors []string) (*cand
 			Percentage: v.Percentage,
 		}
 	}
+
+	log.Printf("palette: %s", palette)
 
 	return &candy.Result{
 		Colors:  colors,
@@ -132,7 +138,7 @@ func (colorCandy *ColorCandy) extractColorsFromHistogram(histogram map[Color]*Co
 	return colors, colorsCount, baseColorsCount
 }
 
-func (colorCandy *ColorCandy) CreatePalette(colors map[string]*ColorCount) (result map[string]*ColorCount) {
+func (colorCandy *ColorCandy) CreatePalette(colors map[string]*ColorCount) map[string]*ColorCount {
 	for len(colors) > colorCandy.PaletteColorsMaxNum {
 		colorsArr := []*ColorCount{}
 		for _, v := range colors {
@@ -172,7 +178,7 @@ func (colorCandy *ColorCandy) CreatePalette(colors map[string]*ColorCount) (resu
 		delete(colors, remove.color.Hex())
 	}
 	if len(colors) == colorCandy.PaletteColorsMaxNum {
-		return
+		return colors
 	}
 	for len(colors) < colorCandy.PaletteColorsMaxNum {
 		colorsArr := []Color{}
@@ -215,7 +221,7 @@ func (colorCandy *ColorCandy) CreatePalette(colors map[string]*ColorCount) (resu
 		}
 	}
 
-	return
+	return colors
 }
 
 func (colorCandy *ColorCandy) closestBaseColorTo(c Color) (Color, float64) {
