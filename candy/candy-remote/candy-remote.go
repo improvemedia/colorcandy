@@ -122,19 +122,19 @@ func main() {
 		}
 		argvalue0 := flag.Arg(1)
 		value0 := argvalue0
-		arg12 := flag.Arg(2)
-		mbTrans13 := thrift.NewTMemoryBufferLen(len(arg12))
-		defer mbTrans13.Close()
-		_, err14 := mbTrans13.WriteString(arg12)
-		if err14 != nil {
+		arg13 := flag.Arg(2)
+		mbTrans14 := thrift.NewTMemoryBufferLen(len(arg13))
+		defer mbTrans14.Close()
+		_, err15 := mbTrans14.WriteString(arg13)
+		if err15 != nil {
 			Usage()
 			return
 		}
-		factory15 := thrift.NewTSimpleJSONProtocolFactory()
-		jsProt16 := factory15.GetProtocol(mbTrans13)
+		factory16 := thrift.NewTSimpleJSONProtocolFactory()
+		jsProt17 := factory16.GetProtocol(mbTrans14)
 		containerStruct1 := candy.NewCandifyArgs()
-		err17 := containerStruct1.ReadField2(jsProt16)
-		if err17 != nil {
+		err18 := containerStruct1.ReadField2(jsProt17)
+		if err18 != nil {
 			Usage()
 			return
 		}

@@ -4,8 +4,8 @@ struct ColorCount {
 }
 
 struct ColorMeta {
-  1: string color,
-  2: string baseColor,
+  1: string baseColor,
+  2: list<string> colors,
   3: double search_factor,
   4: double distance
 }

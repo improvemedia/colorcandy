@@ -83,8 +83,13 @@ func (colorCandy *ColorCandy) Candify(path string, searchColors []string) (*cand
 }
 
 func (colorCandy *ColorCandy) ExtractColors(path string) (map[string]*candy.ColorMeta, map[string]*ColorCount, map[string]map[string]*ColorCount) {
-	histogram := CompactToCommonColors(ImageHistogram(path), colorCandy.Delta)
+	histogram := ImageHistogram(path)
+	compacted := CompactToCommonColors(histogram, colorCandy.Delta)
 
+	return colorCandy.extractColorsFromHistogram(compacted)
+}
+
+func (colorCandy *ColorCandy) extractColorsFromHistogram(histogram map[Color]*ColorCount) (map[string]*candy.ColorMeta, map[string]*ColorCount, map[string]map[string]*ColorCount) {
 	colors := map[string]*candy.ColorMeta{}
 	colorsCount := map[string]*ColorCount{}
 	baseColorsCount := map[string]map[string]*ColorCount{}
@@ -104,9 +109,10 @@ func (colorCandy *ColorCandy) ExtractColors(path string) (map[string]*candy.Colo
 
 		if meta, found := colors[baseColor.Hex()]; found {
 			meta.SearchFactor += count.Percentage
+			meta.Colors = append(meta.Colors, color.Hex())
 		} else {
 			colors[baseColorHex] = &candy.ColorMeta{
-				Color:        color.Hex(),
+				Colors:       []string{color.Hex()},
 				BaseColor:    baseColor.Hex(),
 				SearchFactor: count.Percentage,
 				Distance:     delta,

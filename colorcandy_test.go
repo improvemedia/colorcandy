@@ -8,6 +8,8 @@ import (
 	"os"
 	"strconv"
 	"testing"
+
+	"github.com/improvemedia/colorcandy.git/candy"
 )
 
 var config Config
@@ -199,8 +201,138 @@ func TestCompactToCommonColors(t *testing.T) {
 	palette[c] = &ColorCount{c, 413, 0.24294117647058824}
 	c = ColorFromString("41649e")
 	palette[c] = &ColorCount{c, 1284, 0.7552941176470588}
-	sample := map[string]*ColorCount{}
+
+	sample := sampleHistogram()
+
+	compacted := CompactToCommonColors(palette, 2.5)
+	for k, v := range compacted {
+		if s, ok := sample[k.Hex()]; ok {
+			if s.Percentage != v.Percentage {
+				t.Fatalf("k: %s %.2f != %.2f", k.Hex(), s.Percentage, v.Percentage)
+			}
+		}
+	}
+}
+
+func TestExtractColors(t *testing.T) {
+	c := New(config)
+	sample := sampleHistogram()
+	histogram := map[Color]*ColorCount{}
+	for k, v := range sample {
+		c := ColorFromString(k)
+		histogram[c] = &ColorCount{c, v.Total, v.Percentage}
+	}
+
 	var k string
+	colors := map[string]*candy.ColorMeta{}
+
+	k = "000000"
+	colors[k] = &candy.ColorMeta{
+		Colors:       []string{"0b100d", "0f100a", "0e1117", "141111", "352b16", "212f2b", "422527", "5b4646"},
+		BaseColor:    "000000",
+		SearchFactor: 75,
+		Distance:     10000,
+	}
+
+	k = "660000"
+	colors[k] = &candy.ColorMeta{
+		Colors:       []string{"470d04", "661e0d", "931305"},
+		BaseColor:    "660000",
+		SearchFactor: 3,
+		Distance:     0.0,
+	}
+
+	k = "663300"
+	colors[k] = &candy.ColorMeta{
+		Colors:       []string{"5c2f04", "754b10", "574b2a", "80361f"},
+		BaseColor:    "663300",
+		SearchFactor: 2,
+		Distance:     0.0,
+	}
+
+	k = "0066cc"
+	colors[k] = &candy.ColorMeta{
+		Colors:       []string{"242f49", "1a3971", "41649e"},
+		BaseColor:    "0066cc",
+		SearchFactor: 2,
+		Distance:     18.62195249128642,
+	}
+
+	k = "304961"
+	colors[k] = &candy.ColorMeta{
+		Colors:       []string{"3a5555", "3e4f73", "2e6074", "4f6770", "2f5894", "4f6382"},
+		BaseColor:    "304961",
+		SearchFactor: 4,
+		Distance:     0.0,
+	}
+
+	k = "cc0000"
+	colors[k] = &candy.ColorMeta{
+		Colors:       []string{"af0d09", "a73309", "be3004", "bc440c", "c74007"},
+		BaseColor:    "cc0000",
+		SearchFactor: 3,
+		Distance:     0.0,
+	}
+
+	k = "996633"
+	colors[k] = &candy.ColorMeta{
+		Colors:       []string{"994607", "956e19", "a97305", "b67c0a", "98644c", "8a7057", "a17a55", "a3775e", "8b6d62", "9c7e62", "9e7b6c"},
+		BaseColor:    "996633",
+		SearchFactor: 6,
+		Distance:     0.0,
+	}
+
+	_colors, _, _ := c.extractColorsFromHistogram(histogram)
+	for k, v := range _colors {
+		if s, ok := colors[k]; ok {
+			t.Logf("key=%s value=%+v sample=%+v", k, v, s)
+
+			check := map[string]bool{}
+			for _, v := range v.Colors {
+				check[v] = true
+			}
+			for _, v := range s.Colors {
+				if _, ok := check[v]; !ok {
+					t.Fatal("Color")
+				}
+			}
+
+			if s.BaseColor != v.BaseColor {
+				t.Fatal("BaseColor")
+			}
+			if s.Distance != v.Distance {
+				t.Fatal("Distance")
+			}
+			if s.SearchFactor != math.Floor(v.SearchFactor) {
+				t.Fatal("SearchFactor")
+			}
+		} else {
+			t.Logf("key %s not found", k)
+		}
+	}
+}
+
+func _TestImages(t *testing.T) {
+	c := New(config)
+	for i := 0; i < 1; i++ {
+		path := "./img/" + strconv.Itoa(i) + ".jpg"
+		_, meta, err := c.ExtractColors(path)
+		if err != nil {
+			t.Fatal(err)
+		}
+		for k, v := range meta {
+			fmt.Printf("%s:\n\t%+v\n", k, v)
+		}
+	}
+	t.FailNow()
+}
+
+func sampleHistogram() map[string]*ColorCount {
+	sample := map[string]*ColorCount{}
+
+	var k string
+	var c Color
+
 	k = "0b100d"
 	sample[k] = &ColorCount{c, 61660, 36.27058823529412}
 	k = "0f100a"
@@ -285,28 +417,5 @@ func TestCompactToCommonColors(t *testing.T) {
 	sample[k] = &ColorCount{c, 413, 0.24294117647058824}
 	k = "41649e"
 	sample[k] = &ColorCount{c, 1284, 0.7552941176470588}
-
-	compacted := CompactToCommonColors(palette, 2.5)
-	for k, v := range compacted {
-		if s, ok := sample[k.Hex()]; ok {
-			if s.Total != v.Total || s.Percentage != v.Percentage {
-				t.Fatalf("k: %s %d != %d or %.2f != %.2f", k.Hex(), s.Total, v.Total, s.Percentage, v.Percentage)
-			}
-		}
-	}
-}
-
-func _TestImages(t *testing.T) {
-	c := New(config)
-	for i := 0; i < 1; i++ {
-		path := "./img/" + strconv.Itoa(i) + ".jpg"
-		_, meta, err := c.ExtractColors(path)
-		if err != nil {
-			t.Fatal(err)
-		}
-		for k, v := range meta {
-			fmt.Printf("%s:\n\t%+v\n", k, v)
-		}
-	}
-	t.FailNow()
+	return sample
 }

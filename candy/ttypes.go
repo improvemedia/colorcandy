@@ -132,10 +132,10 @@ func (p *ColorCount) String() string {
 }
 
 type ColorMeta struct {
-	Color        string  `thrift:"color,1"`
-	BaseColor    string  `thrift:"baseColor,2"`
-	SearchFactor float64 `thrift:"search_factor,3"`
-	Distance     float64 `thrift:"distance,4"`
+	BaseColor    string   `thrift:"baseColor,1"`
+	Colors       []string `thrift:"colors,2"`
+	SearchFactor float64  `thrift:"search_factor,3"`
+	Distance     float64  `thrift:"distance,4"`
 }
 
 func NewColorMeta() *ColorMeta {
@@ -190,16 +190,28 @@ func (p *ColorMeta) readField1(iprot thrift.TProtocol) error {
 	if v, err := iprot.ReadString(); err != nil {
 		return fmt.Errorf("error reading field 1: %s")
 	} else {
-		p.Color = v
+		p.BaseColor = v
 	}
 	return nil
 }
 
 func (p *ColorMeta) readField2(iprot thrift.TProtocol) error {
-	if v, err := iprot.ReadString(); err != nil {
-		return fmt.Errorf("error reading field 2: %s")
-	} else {
-		p.BaseColor = v
+	_, size, err := iprot.ReadListBegin()
+	if err != nil {
+		return fmt.Errorf("error reading list being: %s")
+	}
+	p.Colors = make([]string, 0, size)
+	for i := 0; i < size; i++ {
+		var _elem0 string
+		if v, err := iprot.ReadString(); err != nil {
+			return fmt.Errorf("error reading field 0: %s")
+		} else {
+			_elem0 = v
+		}
+		p.Colors = append(p.Colors, _elem0)
+	}
+	if err := iprot.ReadListEnd(); err != nil {
+		return fmt.Errorf("error reading list end: %s")
 	}
 	return nil
 }
@@ -248,27 +260,37 @@ func (p *ColorMeta) Write(oprot thrift.TProtocol) error {
 }
 
 func (p *ColorMeta) writeField1(oprot thrift.TProtocol) (err error) {
-	if err := oprot.WriteFieldBegin("color", thrift.STRING, 1); err != nil {
-		return fmt.Errorf("%T write field begin error 1:color: %s", p, err)
+	if err := oprot.WriteFieldBegin("baseColor", thrift.STRING, 1); err != nil {
+		return fmt.Errorf("%T write field begin error 1:baseColor: %s", p, err)
 	}
-	if err := oprot.WriteString(string(p.Color)); err != nil {
-		return fmt.Errorf("%T.color (1) field write error: %s", p)
+	if err := oprot.WriteString(string(p.BaseColor)); err != nil {
+		return fmt.Errorf("%T.baseColor (1) field write error: %s", p)
 	}
 	if err := oprot.WriteFieldEnd(); err != nil {
-		return fmt.Errorf("%T write field end error 1:color: %s", p, err)
+		return fmt.Errorf("%T write field end error 1:baseColor: %s", p, err)
 	}
 	return err
 }
 
 func (p *ColorMeta) writeField2(oprot thrift.TProtocol) (err error) {
-	if err := oprot.WriteFieldBegin("baseColor", thrift.STRING, 2); err != nil {
-		return fmt.Errorf("%T write field begin error 2:baseColor: %s", p, err)
-	}
-	if err := oprot.WriteString(string(p.BaseColor)); err != nil {
-		return fmt.Errorf("%T.baseColor (2) field write error: %s", p)
-	}
-	if err := oprot.WriteFieldEnd(); err != nil {
-		return fmt.Errorf("%T write field end error 2:baseColor: %s", p, err)
+	if p.Colors != nil {
+		if err := oprot.WriteFieldBegin("colors", thrift.LIST, 2); err != nil {
+			return fmt.Errorf("%T write field begin error 2:colors: %s", p, err)
+		}
+		if err := oprot.WriteListBegin(thrift.STRING, len(p.Colors)); err != nil {
+			return fmt.Errorf("error writing list begin: %s")
+		}
+		for _, v := range p.Colors {
+			if err := oprot.WriteString(string(v)); err != nil {
+				return fmt.Errorf("%T. (0) field write error: %s", p)
+			}
+		}
+		if err := oprot.WriteListEnd(); err != nil {
+			return fmt.Errorf("error writing list end: %s")
+		}
+		if err := oprot.WriteFieldEnd(); err != nil {
+			return fmt.Errorf("%T write field end error 2:colors: %s", p, err)
+		}
 	}
 	return err
 }
@@ -358,17 +380,17 @@ func (p *Result) readField1(iprot thrift.TProtocol) error {
 	}
 	p.Colors = make(map[string]*ColorMeta, size)
 	for i := 0; i < size; i++ {
-		var _key0 string
+		var _key1 string
 		if v, err := iprot.ReadString(); err != nil {
 			return fmt.Errorf("error reading field 0: %s")
 		} else {
-			_key0 = v
+			_key1 = v
 		}
-		_val1 := NewColorMeta()
-		if err := _val1.Read(iprot); err != nil {
-			return fmt.Errorf("%T error reading struct: %s", _val1)
+		_val2 := NewColorMeta()
+		if err := _val2.Read(iprot); err != nil {
+			return fmt.Errorf("%T error reading struct: %s", _val2)
 		}
-		p.Colors[_key0] = _val1
+		p.Colors[_key1] = _val2
 	}
 	if err := iprot.ReadMapEnd(); err != nil {
 		return fmt.Errorf("error reading map end: %s")
@@ -383,17 +405,17 @@ func (p *Result) readField2(iprot thrift.TProtocol) error {
 	}
 	p.Palette = make(map[string]*ColorCount, size)
 	for i := 0; i < size; i++ {
-		var _key2 string
+		var _key3 string
 		if v, err := iprot.ReadString(); err != nil {
 			return fmt.Errorf("error reading field 0: %s")
 		} else {
-			_key2 = v
+			_key3 = v
 		}
-		_val3 := NewColorCount()
-		if err := _val3.Read(iprot); err != nil {
-			return fmt.Errorf("%T error reading struct: %s", _val3)
+		_val4 := NewColorCount()
+		if err := _val4.Read(iprot); err != nil {
+			return fmt.Errorf("%T error reading struct: %s", _val4)
 		}
-		p.Palette[_key2] = _val3
+		p.Palette[_key3] = _val4
 	}
 	if err := iprot.ReadMapEnd(); err != nil {
 		return fmt.Errorf("error reading map end: %s")

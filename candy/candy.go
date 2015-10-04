@@ -65,10 +65,10 @@ func (p *CandyClient) sendCandify(url string, searchColors []string) (err error)
 	}
 	p.SeqId++
 	oprot.WriteMessageBegin("candify", thrift.CALL, p.SeqId)
-	args4 := NewCandifyArgs()
-	args4.Url = url
-	args4.SearchColors = searchColors
-	err = args4.Write(oprot)
+	args5 := NewCandifyArgs()
+	args5.Url = url
+	args5.SearchColors = searchColors
+	err = args5.Write(oprot)
 	oprot.WriteMessageEnd()
 	oprot.Flush()
 	return
@@ -85,26 +85,26 @@ func (p *CandyClient) recvCandify() (value *Result, err error) {
 		return
 	}
 	if mTypeId == thrift.EXCEPTION {
-		error6 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
-		var error7 error
-		error7, err = error6.Read(iprot)
+		error7 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
+		var error8 error
+		error8, err = error7.Read(iprot)
 		if err != nil {
 			return
 		}
 		if err = iprot.ReadMessageEnd(); err != nil {
 			return
 		}
-		err = error7
+		err = error8
 		return
 	}
 	if p.SeqId != seqId {
 		err = thrift.NewTApplicationException(thrift.BAD_SEQUENCE_ID, "ping failed: out of sequence response")
 		return
 	}
-	result5 := NewCandifyResult()
-	err = result5.Read(iprot)
+	result6 := NewCandifyResult()
+	err = result6.Read(iprot)
 	iprot.ReadMessageEnd()
-	value = result5.Success
+	value = result6.Success
 	return
 }
 
@@ -128,9 +128,9 @@ func (p *CandyProcessor) ProcessorMap() map[string]thrift.TProcessorFunction {
 
 func NewCandyProcessor(handler Candy) *CandyProcessor {
 
-	self8 := &CandyProcessor{handler: handler, processorMap: make(map[string]thrift.TProcessorFunction)}
-	self8.processorMap["candify"] = &candyProcessorCandify{handler: handler}
-	return self8
+	self9 := &CandyProcessor{handler: handler, processorMap: make(map[string]thrift.TProcessorFunction)}
+	self9.processorMap["candify"] = &candyProcessorCandify{handler: handler}
+	return self9
 }
 
 func (p *CandyProcessor) Process(iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
@@ -143,12 +143,12 @@ func (p *CandyProcessor) Process(iprot, oprot thrift.TProtocol) (success bool, e
 	}
 	iprot.Skip(thrift.STRUCT)
 	iprot.ReadMessageEnd()
-	x9 := thrift.NewTApplicationException(thrift.UNKNOWN_METHOD, "Unknown function "+name)
+	x10 := thrift.NewTApplicationException(thrift.UNKNOWN_METHOD, "Unknown function "+name)
 	oprot.WriteMessageBegin(name, thrift.EXCEPTION, seqId)
-	x9.Write(oprot)
+	x10.Write(oprot)
 	oprot.WriteMessageEnd()
 	oprot.Flush()
-	return false, x9
+	return false, x10
 
 }
 
@@ -258,13 +258,13 @@ func (p *CandifyArgs) readField2(iprot thrift.TProtocol) error {
 	}
 	p.SearchColors = make([]string, 0, size)
 	for i := 0; i < size; i++ {
-		var _elem10 string
+		var _elem11 string
 		if v, err := iprot.ReadString(); err != nil {
 			return fmt.Errorf("error reading field 0: %s")
 		} else {
-			_elem10 = v
+			_elem11 = v
 		}
-		p.SearchColors = append(p.SearchColors, _elem10)
+		p.SearchColors = append(p.SearchColors, _elem11)
 	}
 	if err := iprot.ReadListEnd(); err != nil {
 		return fmt.Errorf("error reading list end: %s")
