@@ -2,7 +2,7 @@ thrift:
 	thrift --gen go --out . thrift/candy.thrift
 
 thrift-rb:
-	thrift --gen rb --out ../marvin/marvin/lib/candy thrift/candy.thrift
+	thrift --gen rb --out ../marvin/marvin/lib thrift/candy.thrift
 
 build: thrift
 	go get github.com/tools/godep

@@ -55,7 +55,9 @@ func main() {
 	}()
 
 	s := colorcandy.NewThriftService(c)
-	go s.Start(*thrift)
+	go func() {
+		errc <- s.Start(*thrift)
+	}()
 
 	log.Fatal(<-errc)
 }

@@ -17,7 +17,7 @@ func NewThriftService(c *ColorCandy) *ThriftService {
 	return &ThriftService{c}
 }
 
-func (s *ThriftService) Start(addr string) {
+func (s *ThriftService) Start(addr string) error {
 	log.Printf("[thrift] starting service at %s", addr)
 
 	transport, err := thrift.NewTServerSocket(addr)
@@ -28,11 +28,12 @@ func (s *ThriftService) Start(addr string) {
 	server := thrift.NewTSimpleServer4(
 		candy.NewCandyProcessor(s),
 		transport,
-		thrift.NewTTransportFactory(),
+		thrift.NewTFramedTransportFactory(thrift.NewTTransportFactory()),
 		thrift.NewTBinaryProtocolFactoryDefault(),
+		//thrift.NewTDebugProtocolFactory(thrift.NewTJSONProtocolFactory(), "[json]"),
 	)
 
-	server.Serve()
+	return server.Serve()
 }
 
 func (s *ThriftService) Candify(url string, searchColors []string) (res *candy.Result, err error) {
