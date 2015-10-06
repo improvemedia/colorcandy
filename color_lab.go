@@ -66,7 +66,7 @@ func LabMerge(count1 *ColorCount, count2 *ColorCount) (*ColorCount, *ColorCount)
 	return max, min
 }
 
-func lamChroma(a, b int32) float64 {
+func labChroma(a, b int32) float64 {
 	return math.Sqrt(float64((a * a) + (b * b)))
 }
 
@@ -74,7 +74,7 @@ func DeltaE(lab_one Color, lab_other Color) float64 {
 	l1, a1, b1 := lab_one.RGB()
 	l2, a2, b2 := lab_other.RGB()
 
-	c1, c2 := lamChroma(a1, b1), lamChroma(a2, b2)
+	c1, c2 := labChroma(a1, b1), labChroma(a2, b2)
 	da := a1 - a2
 	db := b1 - b2
 	dc := c1 - c2
